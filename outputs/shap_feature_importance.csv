@@ -1,0 +1,10 @@
+feature,mean_abs_shap
+mean_temperature_C,80.10353398269413
+mean_relative_humidity_pct,43.75966322546639
+mean_ndvi,26.11551512391234
+annual_precipitation_mm,12.554793427592747
+mean_evi,12.127226308838694
+evi_std,8.709267473981663
+mean_root_zone_soil_wetness,8.59931155686202
+ndvi_std,5.20973364207317
+valid_observations,0.9579963767294258

@@ -1,0 +1,5 @@
+Model,MAE (kg/ha),RMSE (kg/ha),R² Score,MAPE (%)
+Ridge Regression (Linear),101.2421,127.3219,0.4602,43.4
+Random Forest (Baseline),76.0225,112.7979,0.5763,31.98
+XGBoost (Baseline),82.9475,117.1798,0.5428,32.38
+Improved Hybrid Model,71.4475,99.5706,0.6699,29.57

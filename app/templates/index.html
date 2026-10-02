@@ -1,0 +1,1627 @@
+{% extends "base.html" %}
+{% block title %}AI-Based Estimation of Post Harvest Groundnut Shell Biomass - Agricultural Decision Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Layout & Aesthetic */
+    .hero-wrapper {
+        padding: var(--space-8) 0 var(--space-10);
+        position: relative;
+    }
+
+    .hero-headline-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: var(--text-xs);
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--color-green-primary);
+        background: var(--color-green-light);
+        border: 1px solid var(--color-green-border);
+        padding: 5px 14px;
+        border-radius: var(--radius-pill);
+        margin-bottom: var(--space-4);
+    }
+
+    .hero-title {
+        font-family: var(--font-display);
+        font-size: clamp(2.2rem, 3.8vw, 3.5rem);
+        font-weight: 700;
+        color: var(--color-green-primary);
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+        margin-bottom: var(--space-4);
+    }
+
+    .hero-title .text-serif-accent {
+        color: var(--color-green-accent);
+        font-style: italic;
+    }
+
+    .hero-subtitle {
+        font-size: var(--text-base);
+        color: var(--color-text-muted);
+        line-height: var(--leading-relaxed);
+        max-width: 620px;
+        margin-bottom: var(--space-6);
+    }
+
+    .hero-cta-group {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        flex-wrap: wrap;
+        margin-bottom: var(--space-8);
+    }
+
+    /* 4-Stat Horizontal Strip */
+    .stat-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--space-4);
+        padding: var(--space-4);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .stat-strip-item {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-3);
+    }
+
+    .stat-strip-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-sm);
+        background: var(--color-green-light);
+        color: var(--color-green-accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .stat-strip-val {
+        font-family: var(--font-mono);
+        font-size: var(--text-lg);
+        font-weight: 800;
+        color: var(--color-green-primary);
+        line-height: 1.1;
+    }
+
+    .stat-strip-label {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+        line-height: 1.3;
+        margin-top: 2px;
+    }
+
+    /* Estimator Card on Hero Right */
+    .estimator-box {
+        background: var(--color-surface);
+        border: 1.5px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-6);
+        box-shadow: var(--shadow-md);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .estimator-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--space-4);
+        padding-bottom: var(--space-3);
+        border-bottom: 1px solid var(--color-border-subtle);
+    }
+
+    /* Quick Season Chips */
+    .season-toggle-strip {
+        display: flex;
+        gap: 6px;
+        margin-bottom: var(--space-2);
+        flex-wrap: wrap;
+    }
+
+    .season-chip {
+        padding: 5px 11px;
+        border-radius: var(--radius-sm);
+        background: var(--color-bg-subtle);
+        border: 1px solid var(--color-border);
+        font-size: var(--text-xs);
+        font-weight: 700;
+        color: var(--color-text-muted);
+        cursor: pointer;
+        min-height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--transition-fast);
+    }
+
+    .season-chip:hover {
+        background: var(--color-green-light);
+        color: var(--color-green-primary);
+    }
+
+    .season-chip.active {
+        background: var(--color-green-primary);
+        color: #FFFFFF;
+        border-color: var(--color-green-primary);
+    }
+
+    /* Result Section */
+    .results-overview-strip {
+        margin-top: var(--space-8);
+        padding-top: var(--space-6);
+        border-top: 1.5px dashed var(--color-border);
+    }
+
+    .results-grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--space-4);
+        margin-bottom: var(--space-6);
+    }
+
+    .results-grid-4.is-loading .result-card-value {
+        opacity: 0.3;
+    }
+
+    /* Plain English Agronomic Narrative Box */
+    .agronomic-narrative-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-left: 4px solid var(--color-green-accent);
+        border-radius: var(--radius);
+        padding: var(--space-4) var(--space-6);
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-4);
+        flex-wrap: wrap;
+    }
+
+    /* Topic Navigation Sticky Tab Bar */
+    .topic-tab-bar {
+        position: sticky;
+        top: var(--navbar-height);
+        z-index: 850;
+        background: rgba(246, 243, 235, 0.95);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: var(--space-3) 0;
+        border-bottom: 1.5px solid var(--color-border);
+        margin-bottom: var(--space-8);
+    }
+
+    .topic-tabs-flex {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        overflow-x: auto;
+        padding-bottom: 2px;
+        scrollbar-width: none;
+    }
+
+    .topic-tabs-flex::-webkit-scrollbar {
+        display: none;
+    }
+
+    .topic-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 18px;
+        border-radius: var(--radius-pill);
+        background: var(--color-surface);
+        border: 1.5px solid var(--color-border);
+        color: var(--color-text-muted);
+        font-size: var(--text-sm);
+        font-weight: 700;
+        cursor: pointer;
+        min-height: 44px;
+        white-space: nowrap;
+        transition: all var(--transition-fast);
+    }
+
+    .topic-btn:hover {
+        background: var(--color-green-light);
+        color: var(--color-green-primary);
+        border-color: var(--color-green-accent);
+    }
+
+    .topic-btn.active, .topic-btn[aria-selected="true"] {
+        background: var(--color-green-primary);
+        color: #FFFFFF;
+        border-color: var(--color-green-primary);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .topic-pill-count {
+        font-size: 10px;
+        padding: 2px 7px;
+        border-radius: var(--radius-pill);
+        background: rgba(0, 0, 0, 0.08);
+    }
+
+    .topic-btn.active .topic-pill-count {
+        background: rgba(255, 255, 255, 0.25);
+        color: #FFFFFF;
+    }
+
+    /* Flow Chart Elements in Pipeline */
+    .pipeline-flow-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-4);
+        margin-bottom: var(--space-6);
+    }
+
+    .pipeline-flow-step {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius);
+        padding: var(--space-4);
+        position: relative;
+    }
+
+    .pipeline-flow-step-num {
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--color-brown);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 4px;
+    }
+
+    .pipeline-flow-step-title {
+        font-size: var(--text-sm);
+        font-weight: 700;
+        color: var(--color-green-primary);
+        margin-bottom: 4px;
+    }
+
+    .pipeline-flow-step-desc {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+        line-height: 1.4;
+    }
+
+    /* Media Breakpoints */
+    @media (max-width: 1024px) {
+        .stat-strip {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .results-grid-4 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .pipeline-flow-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .stat-strip {
+            grid-template-columns: 1fr;
+        }
+        .results-grid-4 {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ========================================================================= -->
+<!-- 1. HERO SECTION (12-Column Grid, Editorial Typography, Singular Focus)   -->
+<!-- ========================================================================= -->
+<section class="hero-wrapper" id="hero">
+    <div class="grid-12" style="align-items: stretch;">
+        <!-- Left Column (Span 7): Title, Mission, CTAs, 4 Stats -->
+        <div class="col-7 col-md-12">
+            <div class="hero-headline-tag">
+                <span class="status-beacon-live" aria-hidden="true"></span>
+                <span>ICRISAT &bull; NASA POWER &bull; MODIS TERRA AI PLATFORM</span>
+            </div>
+
+            <h1 class="hero-title">
+                Turn Groundnut Shell Residue Into <span class="text-serif-accent">Clean Bioenergy</span> &amp; Rural Wealth.
+            </h1>
+
+            <p class="hero-subtitle">
+                AI-driven post-harvest estimation combining <strong>18 continuous cropping seasons</strong> with <strong>daily NASA weather telemetry</strong> and <strong>250m satellite canopy reflectance</strong> across Andhra Pradesh.
+            </p>
+
+            <div class="hero-cta-group">
+                <a href="/predict" class="btn btn-primary btn-lg">
+                    <svg class="icon-svg icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
+                    </svg>
+                    <span>Launch Land Predictor</span>
+                </a>
+
+                <a href="#pipeline" class="btn btn-secondary btn-lg" onclick="switchHomeTopic('pipeline', true)">
+                    <svg class="icon-svg icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                    <span>Explore 9-Stage AI Pipeline</span>
+                </a>
+            </div>
+
+            <!-- 4-Stat Value Strip -->
+            <div class="stat-strip">
+                <div class="stat-strip-item">
+                    <div class="stat-strip-icon" aria-hidden="true">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+                    </div>
+                    <div>
+                        <div class="stat-strip-val">18 Yrs</div>
+                        <div class="stat-strip-label">Ground Truth Archive</div>
+                    </div>
+                </div>
+
+                <div class="stat-strip-item">
+                    <div class="stat-strip-icon" aria-hidden="true">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                    </div>
+                    <div>
+                        <div class="stat-strip-val">1.43 MWh</div>
+                        <div class="stat-strip-label">Power Output / Tonne</div>
+                    </div>
+                </div>
+
+                <div class="stat-strip-item">
+                    <div class="stat-strip-icon" aria-hidden="true">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+                    </div>
+                    <div>
+                        <div class="stat-strip-val">~28.5%</div>
+                        <div class="stat-strip-label">Shell-to-Pod Mass</div>
+                    </div>
+                </div>
+
+                <div class="stat-strip-item">
+                    <div class="stat-strip-icon" aria-hidden="true">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+                    </div>
+                    <div>
+                        <div class="stat-strip-val">23 Plants</div>
+                        <div class="stat-strip-label">Mapped Off-Takers</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column (Span 5): Instant Regional Estimator Card -->
+        <div class="col-5 col-md-12">
+            <div class="estimator-box" id="estimator">
+                <div>
+                    <div class="estimator-header">
+                        <div>
+                            <h2 style="font-size: var(--text-lg); font-weight: 700; color: var(--color-green-primary); margin: 0;">
+                                Instant Regional Estimator
+                            </h2>
+                            <div style="font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px;">
+                                Calibrated against 198 district-season holdout observations
+                            </div>
+                        </div>
+                        <span class="badge badge-success">Live Engine</span>
+                    </div>
+
+                    <!-- District Selection with Search Filter -->
+                    <div class="form-group">
+                        <label for="heroDistrictSearch" class="form-label">
+                            <svg class="icon-svg icon-xs" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <span>1. District (Andhra Pradesh)</span>
+                        </label>
+                        <div class="searchable-wrap">
+                            <svg class="icon-svg icon-xs searchable-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <input type="text" id="heroDistrictSearch" placeholder="Type to filter district (e.g. Ananthapur)..." class="searchable-input" aria-label="Search district filter">
+                            <select id="heroDistrictSelect" class="form-select" aria-label="Select District">
+                                {% for d in districts %}
+                                <option value="{{ d }}" {% if d == 'Ananthapur' %}selected{% endif %}>{{ d }} District</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Cropping Season Selection with Quick Pills -->
+                    <div class="form-group">
+                        <label for="heroYearSelect" class="form-label">
+                            <svg class="icon-svg icon-xs" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 2v4"/><path d="M16 2v4"/></svg>
+                            <span>2. Cropping Season Year</span>
+                        </label>
+                        <div class="season-toggle-strip" role="group" aria-label="Quick Year Toggles">
+                            <button type="button" class="season-chip active" data-year="2017">2017</button>
+                            <button type="button" class="season-chip" data-year="2016">2016</button>
+                            <button type="button" class="season-chip" data-year="2015">2015</button>
+                            <button type="button" class="season-chip" data-year="2010">2010</button>
+                        </div>
+                        <select id="heroYearSelect" class="form-select" aria-label="Select Year">
+                            {% for y in years %}
+                            <option value="{{ y }}" {% if y == 2017 %}selected{% endif %}>{{ y }} Season</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Form Actions: Recalculate + Reset -->
+                <div style="display: flex; gap: var(--space-3); margin-top: var(--space-4); border-top: 1px solid var(--color-border-subtle); padding-top: var(--space-4);">
+                    <button type="button" id="heroEstimateBtn" class="btn btn-primary" style="flex: 2;">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        <span>Calculate Estimate</span>
+                    </button>
+                    <button type="button" id="heroResetBtn" class="btn btn-secondary" style="flex: 1;" title="Reset selection to Ananthapur 2017 baseline">
+                        <span>↺ Reset</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- 2. ANATOMICAL RESULT CARDS STRIP (Icon, Large Number, Unit, Tooltip)     -->
+<!-- ========================================================================= -->
+<section class="results-overview-strip" id="results-anchor">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); flex-wrap: wrap; gap: 8px;">
+        <div>
+            <h2 style="font-size: var(--text-xl); font-weight: 700; color: var(--color-green-primary); margin: 0;">
+                Calculated Regional Biomass &amp; Bioenergy Telemetry
+            </h2>
+            <div id="calibrationTag" style="font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px;">
+                Calibrated for Ananthapur, Season 2017 &bull; Hybrid VotingRegressor Ensemble
+            </div>
+        </div>
+        <span class="badge badge-info">Independent Benchmark N=40</span>
+    </div>
+
+    <!-- 4 Anatomical Result Cards -->
+    <div class="results-grid-4" id="regionalResultGrid">
+        <!-- Card 1: Shell Yield per Hectare -->
+        <div class="result-card">
+            <div class="result-card-top">
+                <div class="result-card-icon">
+                    <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+                </div>
+                <button type="button" class="tooltip-trigger" data-tooltip="Estimated shell byproduct produced per hectare of harvested groundnut fields based on pod yield ratio." aria-label="Learn about Shell Yield">?</button>
+            </div>
+            <div class="result-card-value-wrap">
+                <span class="result-card-value" id="displayBiomassKgHa">215.04</span>
+                <span class="result-card-unit">kg / ha</span>
+            </div>
+            <div class="result-card-caption">
+                Regional Shell Yield Density (&plusmn;71.1 kg/ha MAE)
+            </div>
+        </div>
+
+        <!-- Card 2: Total District Volume -->
+        <div class="result-card">
+            <div class="result-card-top">
+                <div class="result-card-icon">
+                    <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                </div>
+                <button type="button" class="tooltip-trigger" data-tooltip="Total aggregate groundnut shell mass generated across all harvested parcels in the selected district." aria-label="Learn about District Volume">?</button>
+            </div>
+            <div class="result-card-value-wrap">
+                <span class="result-card-value" id="displayBiomassTonnes">90,987.72</span>
+                <span class="result-card-unit">Tonnes</span>
+            </div>
+            <div class="result-card-caption">
+                Total Recoverable Shell Wastage Mass
+            </div>
+        </div>
+
+        <!-- Card 3: Electricity Equivalent -->
+        <div class="result-card">
+            <div class="result-card-top">
+                <div class="result-card-icon">
+                    <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </div>
+                <button type="button" class="tooltip-trigger" data-tooltip="Clean electricity generation potential via direct combustion or gasification at 1.43 MWh per tonne." aria-label="Learn about Clean Electricity">?</button>
+            </div>
+            <div class="result-card-value-wrap">
+                <span class="result-card-value" id="displayEnergyMwh">130,921</span>
+                <span class="result-card-unit">MWh</span>
+            </div>
+            <div class="result-card-caption">
+                Powering ~<span id="displayHouseholds">65,461</span> Rural Households
+            </div>
+        </div>
+
+        <!-- Card 4: Coal CO2 Offset -->
+        <div class="result-card">
+            <div class="result-card-top">
+                <div class="result-card-icon">
+                    <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+                </div>
+                <button type="button" class="tooltip-trigger" data-tooltip="Net avoided fossil greenhouse gas emissions when shells displace thermal grade coal at 1.17 tonnes CO2 per tonne." aria-label="Learn about CO2 Offset">?</button>
+            </div>
+            <div class="result-card-value-wrap">
+                <span class="result-card-value" id="displayCo2Offset">107,355</span>
+                <span class="result-card-unit">t CO₂</span>
+            </div>
+            <div class="result-card-caption">
+                Displaced Fossil Fuel Air Emissions
+            </div>
+        </div>
+    </div>
+
+    <!-- Plain-English Translation Narrative Card -->
+    <div class="agronomic-narrative-card">
+        <div style="display: flex; align-items: flex-start; gap: 14px;">
+            <div style="width: 32px; height: 32px; border-radius: var(--radius-sm); background: var(--color-green-light); color: var(--color-green-accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;">
+                <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            </div>
+            <div>
+                <div style="font-size: var(--text-xs); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-green-primary); margin-bottom: 2px;">
+                    Agronomic Translation in Plain English
+                </div>
+                <p id="plainLanguageSummary" style="font-size: var(--text-sm); color: var(--color-text); margin: 0; line-height: 1.55;">
+                    In <strong>Ananthapur</strong> during the <strong>2017 Season</strong>, groundnut fields generated approximately <strong>90,988 tonnes</strong> of shell byproduct across <strong>423,120 hectares</strong>. If delivered to regional bioenergy and briquette plants instead of being burned, this volume can generate <strong>130,921 MWh</strong> of clean power while avoiding <strong>107,355 tonnes</strong> of dirty coal emissions.
+                </p>
+            </div>
+        </div>
+        <a href="/marketplace" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
+            <span>Match 23 Buyers &rarr;</span>
+        </a>
+    </div>
+</section>
+
+<!-- ========================================================================= -->
+<!-- 3. TOPIC SELECTOR TABS (Sticky, Clear Active State, URL Hash Support)     -->
+<!-- ========================================================================= -->
+<nav class="topic-tab-bar" id="topic-control" aria-label="Topic Selector">
+    <div class="site-container">
+        <div class="topic-tabs-flex" role="tablist">
+            <button type="button" class="topic-btn active" role="tab" id="tab-regional" aria-controls="panel-regional" aria-selected="true" data-topic="regional" onclick="switchHomeTopic('regional', true)">
+                <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>
+                <span>Regional Biomass Board</span>
+                <span class="topic-pill-count">11 Districts</span>
+            </button>
+
+            <button type="button" class="topic-btn" role="tab" id="tab-pipeline" aria-controls="panel-pipeline" aria-selected="false" data-topic="pipeline" onclick="switchHomeTopic('pipeline', true)">
+                <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                <span>9-Stage AI Pipeline</span>
+                <span class="topic-pill-count">Mac-Dock</span>
+            </button>
+
+            <button type="button" class="topic-btn" role="tab" id="tab-utilization" aria-controls="panel-utilization" aria-selected="false" data-topic="utilization" onclick="switchHomeTopic('utilization', true)">
+                <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+                <span>Shell Economics &amp; Solutions</span>
+                <span class="topic-pill-count">3 Off-Takes</span>
+            </button>
+
+            <button type="button" class="topic-btn" role="tab" id="tab-tools" aria-controls="panel-tools" aria-selected="false" data-topic="tools" onclick="switchHomeTopic('tools', true)">
+                <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                <span>Platform Tools Directory</span>
+                <span class="topic-pill-count">6 Modules</span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- ========================================================================= -->
+<!-- 4. TOPIC PANELS (Only one active at a time)                               -->
+<!-- ========================================================================= -->
+
+<!-- PANEL 1: REGIONAL INTELLIGENCE BOARD -->
+<section id="panel-regional" class="topic-panel active" role="tabpanel" aria-labelledby="tab-regional" style="margin-bottom: var(--space-12);">
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">Regional Agro-Meteorological Summary</h3>
+                <div style="font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px;">
+                    Groundnut cultivation extent, byproduct conversion breakdown, and economic recovery factors
+                </div>
+            </div>
+            <span class="badge badge-success">ICRISAT Gazetted</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6);">
+            <div style="background: var(--color-bg-subtle); border-radius: var(--radius); padding: var(--space-4);">
+                <div style="font-size: var(--text-xs); font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">Cultivated Groundnut Area</div>
+                <div id="displayCropArea" style="font-family: var(--font-mono); font-size: var(--text-2xl); font-weight: 800; color: var(--color-green-primary); margin-top: 4px;">423,120 ha</div>
+                <div style="font-size: var(--text-xs); color: var(--color-text-muted);">Verified satellite parcel index</div>
+            </div>
+
+            <div style="background: var(--color-bg-subtle); border-radius: var(--radius); padding: var(--space-4);">
+                <div style="font-size: var(--text-xs); font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">Per-Acre Density</div>
+                <div style="font-family: var(--font-mono); font-size: var(--text-2xl); font-weight: 800; color: var(--color-green-primary); margin-top: 4px;"><span id="displayBiomassKgAcre">87.0</span> kg / ac</div>
+                <div style="font-size: var(--text-xs); color: var(--color-text-muted);">Farm field operational rate</div>
+            </div>
+
+            <div style="background: var(--color-bg-subtle); border-radius: var(--radius); padding: var(--space-4);">
+                <div style="font-size: var(--text-xs); font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">Gross Byproduct Value</div>
+                <div style="font-family: var(--font-mono); font-size: var(--text-2xl); font-weight: 800; color: var(--color-gold); margin-top: 4px;">₹ <span id="displayBiomassRevenue">18.2</span> Cr</div>
+                <div style="font-size: var(--text-xs); color: var(--color-text-muted);">At ₹ 2,000 / Tonne farmgate</div>
+            </div>
+
+            <div style="background: var(--color-bg-subtle); border-radius: var(--radius); padding: var(--space-4);">
+                <div style="font-size: var(--text-xs); font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">Clean Energy Potential</div>
+                <div style="font-family: var(--font-mono); font-size: var(--text-2xl); font-weight: 800; color: var(--color-green-primary); margin-top: 4px;">130.9 GWh</div>
+                <div style="font-size: var(--text-xs); color: var(--color-text-muted);">Calorific equivalence: 18.5 MJ/kg</div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: var(--color-surface-muted); border-radius: var(--radius); padding: 14px 18px; border: 1px solid var(--color-border-subtle);">
+            <div style="font-size: var(--text-sm); color: var(--color-text-muted);">
+                Need custom farm coordinates or simulated rainfall scenarios for upcoming seasons?
+            </div>
+            <a href="/predict" class="btn btn-primary btn-sm">
+                <span>Open Custom Land Predictor &rarr;</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- PANEL 2: 9-STAGE AI PIPELINE & MAC-DOCK -->
+<section id="panel-pipeline" class="topic-panel" role="tabpanel" aria-labelledby="tab-pipeline" style="display: none; margin-bottom: var(--space-12);">
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">9-Stage Machine Learning Pipeline Architecture</h3>
+                <div style="font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px;">
+                    Click or swipe any stage on the interactive dock to inspect algorithmic specifications and data flows
+                </div>
+            </div>
+            <span class="badge badge-info" id="dockStageCounterBadge">Stage 06 of 09</span>
+        </div>
+
+        <!-- Touch Controls Bar for Mobile -->
+        <div class="dock-touch-bar">
+            <button type="button" class="btn btn-secondary btn-sm" id="dockPrevBtn" aria-label="Previous pipeline stage">
+                <span>‹ Prev Stage</span>
+            </button>
+            <span style="font-size: var(--text-xs); font-weight: 700; color: var(--color-green-primary);" id="dockStepCounter">
+                Stage 06 &bull; Hybrid Model Stacking
+            </span>
+            <button type="button" class="btn btn-secondary btn-sm" id="dockNextBtn" aria-label="Next pipeline stage">
+                <span>Next Stage ›</span>
+            </button>
+        </div>
+
+        <!-- Mac-Dock Outer Shelf -->
+        <div class="mac-dock-outer" style="margin-bottom: var(--space-6);">
+            <div class="mac-dock-shelf" id="dockShelf" role="tablist" aria-label="Pipeline Stages">
+                <button type="button" class="dock-item" data-step="1" id="dock-step-1" role="tab" aria-selected="false">
+                    <span class="dock-icon-box">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+                    </span>
+                    <span class="dock-label">01. Ingestion</span>
+                </button>
+
+                <button type="button" class="dock-item" data-step="2" id="dock-step-2" role="tab" aria-selected="false">
+                    <span class="dock-icon-box">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+                    </span>
+                    <span class="dock-label">02. Cleaning</span>
+                </button>
+
+                <button type="button" class="dock-item" data-step="3" id="dock-step-3" role="tab" aria-selected="false">
+                    <span class="dock-icon-box">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" x2="6" y1="9" y2="21"/></svg>
+                    </span>
+                    <span class="dock-label">03. Features</span>
+                </button>
+
+                <button type="button" class="dock-item" data-step="4" id="dock-step-4" role="tab" aria-selected="false">
+                    <span class="dock-icon-box">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
+                    </span>
+                    <span class="dock-label">04. SHAP Rank</span>
+                </button>
+
+                <button type="button" class="dock-item" data-step="5" id="dock-step-5" role="tab" aria-selected="false">
+                    <span class="dock-icon-box">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 9h6"/><path d="M15 15h6"/></svg>
+                    </span>
+                    <span class="dock-label">05. Trees Fit</span>
+                </button>
+
+                <button type="button" class="dock-item active" data-step="6" id="dock-step-6" role="tab" aria-selected="true">
+                    <span class="dock-icon-box">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                    </span>
+                    <span class="dock-label">06. Ensemble</span>
+                </button>
+
+                <button type="button" class="dock-item" data-step="7" id="dock-step-7" role="tab" aria-selected="false">
+                    <span class="dock-icon-box">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+                    </span>
+                    <span class="dock-label">07. Holdout</span>
+                </button>
+
+                <button type="button" class="dock-item" data-step="8" id="dock-step-8" role="tab" aria-selected="false">
+                    <span class="dock-icon-box">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </span>
+                    <span class="dock-label">08. Explain XAI</span>
+                </button>
+
+                <button type="button" class="dock-item" data-step="9" id="dock-step-9" role="tab" aria-selected="false">
+                    <span class="dock-icon-box">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
+                    </span>
+                    <span class="dock-label">09. Logistics</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Detailed Stage Panel (Populated dynamically) -->
+        <div id="dock-detail-panel" style="background: var(--color-surface); border: 1.5px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-6); box-shadow: var(--shadow-sm);">
+            <!-- Populated via renderStepDetail() -->
+        </div>
+    </div>
+</section>
+
+<!-- PANEL 3: SHELL UTILIZATION & ECONOMICS -->
+<section id="panel-utilization" class="topic-panel" role="tabpanel" aria-labelledby="tab-utilization" style="display: none; margin-bottom: var(--space-12);">
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">Commercial Shell Utilization &amp; Rural Circular Economy</h3>
+                <div style="font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px;">
+                    Three high-value off-take routes converting agricultural residues into revenue streams
+                </div>
+            </div>
+            <span class="badge badge-warning">Zero Crop Burning</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-5); margin-bottom: var(--space-6);">
+            <!-- Solution 1: Biomass Briquettes -->
+            <div style="background: var(--color-surface); border: 1.5px solid var(--color-border); border-radius: var(--radius); padding: var(--space-5);">
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); background: var(--color-green-light); color: var(--color-green-accent); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+                    <svg class="icon-svg icon-md" viewBox="0 0 24 24"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/></svg>
+                </div>
+                <h4 style="font-size: var(--text-base); font-weight: 700; color: var(--color-green-primary); margin-bottom: 6px;">
+                    Solid Biomass Briquettes (90mm)
+                </h4>
+                <p style="font-size: var(--text-xs); color: var(--color-text-muted); line-height: 1.55; margin-bottom: var(--space-3);">
+                    Dense fuel logs replacing high-sulfur coal in cement kilns, tea drying units, and textile boiler furnaces.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 4px; font-size: var(--text-xs); border-top: 1px dashed var(--color-border-subtle); padding-top: var(--space-2);">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Quoted Off-Take Rate:</span>
+                        <strong style="color: var(--color-green-primary); font-family: var(--font-mono);">₹ 6,500 - 7,200 / T</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Displaces:</span>
+                        <strong style="color: var(--color-text);">Grade-C Thermal Coal</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Solution 2: Clean Gasification Power -->
+            <div style="background: var(--color-surface); border: 1.5px solid var(--color-border); border-radius: var(--radius); padding: var(--space-5);">
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); background: var(--color-gold-light); color: var(--color-gold-hover); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+                    <svg class="icon-svg icon-md" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </div>
+                <h4 style="font-size: var(--text-base); font-weight: 700; color: var(--color-green-primary); margin-bottom: 6px;">
+                    Biomass Gasification &amp; Cogeneration
+                </h4>
+                <p style="font-size: var(--text-xs); color: var(--color-text-muted); line-height: 1.55; margin-bottom: var(--space-3);">
+                    Producer syngas fired in internal combustion engines to generate base-load electricity for local irrigation grids.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 4px; font-size: var(--text-xs); border-top: 1px dashed var(--color-border-subtle); padding-top: var(--space-2);">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Electricity Factor:</span>
+                        <strong style="color: var(--color-green-primary); font-family: var(--font-mono);">1.43 MWh / Tonne</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>CO₂ Abatement:</span>
+                        <strong style="color: var(--color-text);">1.17 t CO₂ avoided / T</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Solution 3: Biochar Soil Conditioner -->
+            <div style="background: var(--color-surface); border: 1.5px solid var(--color-border); border-radius: var(--radius); padding: var(--space-5);">
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); background: var(--color-brown-light); color: var(--color-brown); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+                    <svg class="icon-svg icon-md" viewBox="0 0 24 24"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4.1 5.5.8z"/></svg>
+                </div>
+                <h4 style="font-size: var(--text-base); font-weight: 700; color: var(--color-green-primary); margin-bottom: 6px;">
+                    Biochar Carbon Sequestration
+                </h4>
+                <p style="font-size: var(--text-xs); color: var(--color-text-muted); line-height: 1.55; margin-bottom: var(--space-3);">
+                    Pyrolyzed carbon returned to drought-prone red sandy loam soils, increasing cation exchange capacity by 34%.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 4px; font-size: var(--text-xs); border-top: 1px dashed var(--color-border-subtle); padding-top: var(--space-2);">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Carbon Half-Life:</span>
+                        <strong style="color: var(--color-green-primary); font-family: var(--font-mono);">&gt; 100 Years</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Moisture Retention:</span>
+                        <strong style="color: var(--color-text);">+22% Root Zone Water</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/marketplace" class="btn btn-primary">
+                <span>View Real-Time Factory Off-Takers &rarr;</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- PANEL 4: PLATFORM TOOLS DIRECTORY -->
+<section id="panel-tools" class="topic-panel" role="tabpanel" aria-labelledby="tab-tools" style="display: none; margin-bottom: var(--space-12);">
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">Comprehensive Decision Support Tools</h3>
+                <div style="font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px;">
+                    Explore all 6 operational and analytical submodules across the research suite
+                </div>
+            </div>
+            <span class="badge badge-info">Production Ready</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-4);">
+            <a href="/predict" class="card" style="text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--color-green-light); color: var(--color-green-accent); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/></svg>
+                    </div>
+                    <h4 style="font-size: var(--text-base); font-weight: 700; color: var(--color-green-primary); margin-bottom: 4px;">Future Land Predictor</h4>
+                    <p style="font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: var(--space-3);">Forecast future biomass yield for any land size with drought and irrigation climate simulation.</p>
+                </div>
+                <span style="font-size: var(--text-xs); font-weight: 700; color: var(--color-green-accent);">Launch Forecaster &rarr;</span>
+            </a>
+
+            <a href="/marketplace" class="card" style="text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--color-green-light); color: var(--color-green-accent); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+                    </div>
+                    <h4 style="font-size: var(--text-base); font-weight: 700; color: var(--color-green-primary); margin-bottom: 4px;">Industry Matcher</h4>
+                    <p style="font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: var(--space-3);">Calculate exact freight transport costs and farmer in-hand net profits across 23 regional plants.</p>
+                </div>
+                <span style="font-size: var(--text-xs); font-weight: 700; color: var(--color-green-accent);">Find Buyers &rarr;</span>
+            </a>
+
+            <a href="/comparison" class="card" style="text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--color-green-light); color: var(--color-green-accent); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>
+                    </div>
+                    <h4 style="font-size: var(--text-base); font-weight: 700; color: var(--color-green-primary); margin-bottom: 4px;">Accuracy Leaderboard</h4>
+                    <p style="font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: var(--space-3);">Compare Random Forest, Extra Trees, and Hybrid Ensemble scores on holdout test partition (N=40).</p>
+                </div>
+                <span style="font-size: var(--text-xs); font-weight: 700; color: var(--color-green-accent);">View Metrics &rarr;</span>
+            </a>
+
+            <a href="/xai" class="card" style="text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--color-green-light); color: var(--color-green-accent); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M12 5a3 3 0 1 0-5.997.142 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.142 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/></svg>
+                    </div>
+                    <h4 style="font-size: var(--text-base); font-weight: 700; color: var(--color-green-primary); margin-bottom: 4px;">TreeSHAP Explainability</h4>
+                    <p style="font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: var(--space-3);">Understand exact agro-climatic catalysts and yield drag drivers with local feature attributions.</p>
+                </div>
+                <span style="font-size: var(--text-xs); font-weight: 700; color: var(--color-green-accent);">Inspect Drivers &rarr;</span>
+            </a>
+
+            <a href="/historical" class="card" style="text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--color-green-light); color: var(--color-green-accent); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+                    </div>
+                    <h4 style="font-size: var(--text-base); font-weight: 700; color: var(--color-green-primary); margin-bottom: 4px;">18-Year Historical Trends</h4>
+                    <p style="font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: var(--space-3);">Search any harvest year from 1950 to 2100 across 11 districts with meteorological filters.</p>
+                </div>
+                <span style="font-size: var(--text-xs); font-weight: 700; color: var(--color-green-accent);">Explore Records &rarr;</span>
+            </a>
+
+            <a href="/database" class="card" style="text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--color-green-light); color: var(--color-green-accent); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3);">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
+                    </div>
+                    <h4 style="font-size: var(--text-base); font-weight: 700; color: var(--color-green-primary); margin-bottom: 4px;">Relational Database Console</h4>
+                    <p style="font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: var(--space-3);">Inspect SQL observation records, verified buyer factories, and recorded commercial tenders.</p>
+                </div>
+                <span style="font-size: var(--text-xs); font-weight: 700; color: var(--color-green-accent);">Browse Database &rarr;</span>
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Expose switchHomeTopic globally for onclick and hash routing
+function switchHomeTopic(topicId, shouldScroll = false) {
+    const validTopics = ['regional', 'pipeline', 'utilization', 'tools'];
+    if (!validTopics.includes(topicId)) topicId = 'regional';
+
+    // 1. Update tab buttons
+    const tabBtns = document.querySelectorAll('.topic-btn');
+    tabBtns.forEach(btn => {
+        const isTarget = btn.dataset.topic === topicId;
+        btn.classList.toggle('active', isTarget);
+        btn.setAttribute('aria-selected', isTarget ? 'true' : 'false');
+    });
+
+    // 2. Update topic panels (hide all, show target)
+    const panels = document.querySelectorAll('.topic-panel');
+    panels.forEach(panel => {
+        if (panel.id === 'panel-' + topicId) {
+            panel.style.display = 'block';
+            panel.classList.add('active');
+        } else {
+            panel.style.display = 'none';
+            panel.classList.remove('active');
+        }
+    });
+
+    // 3. Update URL hash cleanly
+    try {
+        history.replaceState(null, '', '#' + topicId);
+    } catch(e) {}
+
+    // 4. Smooth scroll to topic control if requested
+    if (shouldScroll) {
+        const targetEl = document.getElementById('topic-control');
+        if (targetEl) {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+}
+
+(function() {
+const BIOMASS_DATABASE = {"Ananthapur": {"2000": {"kg_ha": 223.13, "tonnes": 181763.93, "area_ha": 814610, "mwh": 261538.1, "co2": 214461.24, "briquettes": 172675.73, "biochar": 63617.38}, "2001": {"kg_ha": 93.38, "tonnes": 72600.15, "area_ha": 777470, "mwh": 104463.55, "co2": 85660.11, "briquettes": 68970.14, "biochar": 25410.05}, "2002": {"kg_ha": 74.4, "tonnes": 55800.0, "area_ha": 750000, "mwh": 80290.0, "co2": 65837.8, "briquettes": 53010.0, "biochar": 19530.0}, "2003": {"kg_ha": 60.55, "tonnes": 41537.3, "area_ha": 686000, "mwh": 59767.56, "co2": 49009.4, "briquettes": 39460.43, "biochar": 14538.06}, "2004": {"kg_ha": 161.93, "tonnes": 141254.78, "area_ha": 872320, "mwh": 203249.93, "co2": 166664.94, "briquettes": 134192.04, "biochar": 49439.17}, "2005": {"kg_ha": 87.2, "tonnes": 78396.29, "area_ha": 899040, "mwh": 112803.55, "co2": 92498.91, "briquettes": 74476.48, "biochar": 27438.7}, "2006": {"kg_ha": 18.77, "tonnes": 12427.8, "area_ha": 662110, "mwh": 17882.22, "co2": 14663.42, "briquettes": 11806.41, "biochar": 4349.73}, "2007": {"kg_ha": 252.03, "tonnes": 226028.06, "area_ha": 896830, "mwh": 325229.26, "co2": 266687.99, "briquettes": 214726.66, "biochar": 79109.82}, "2008": {"kg_ha": 22.98, "tonnes": 20003.17, "area_ha": 870460, "mwh": 28782.34, "co2": 23601.52, "briquettes": 19003.01, "biochar": 7001.11}, "2009": {"kg_ha": 53.54, "tonnes": 28396.55, "area_ha": 530380, "mwh": 40859.48, "co2": 33504.77, "briquettes": 26976.72, "biochar": 9938.79}, "2010": {"kg_ha": 115.34, "tonnes": 96201.63, "area_ha": 834070, "mwh": 138423.46, "co2": 113507.24, "briquettes": 91391.55, "biochar": 33670.57}, "2011": {"kg_ha": 55.02, "tonnes": 41476.28, "area_ha": 753840, "mwh": 59679.76, "co2": 48937.4, "briquettes": 39402.47, "biochar": 14516.7}, "2012": {"kg_ha": 90.43, "tonnes": 65986.77, "area_ha": 729700, "mwh": 94947.63, "co2": 77857.06, "briquettes": 62687.43, "biochar": 23095.37}, "2013": {"kg_ha": 85.92, "tonnes": 62588.42, "area_ha": 728450, "mwh": 90057.78, "co2": 73847.38, "briquettes": 59459.0, "biochar": 21905.95}, "2014": {"kg_ha": 61.3, "tonnes": 34680.47, "area_ha": 565750, "mwh": 49901.34, "co2": 40919.1, "briquettes": 32946.45, "biochar": 12138.16}, "2015": {"kg_ha": 150.41, "tonnes": 70418.95, "area_ha": 468180, "mwh": 101325.04, "co2": 83086.53, "briquettes": 66898.0, "biochar": 24646.63}, "2016": {"kg_ha": 52.75, "tonnes": 32901.76, "area_ha": 623730, "mwh": 47341.98, "co2": 38820.42, "briquettes": 31256.67, "biochar": 11515.62}, "2017": {"kg_ha": 215.04, "tonnes": 90987.72, "area_ha": 423120, "mwh": 130921.22, "co2": 107355.4, "briquettes": 86438.33, "biochar": 31845.7}}, "Chittoor": {"2000": {"kg_ha": 259.93, "tonnes": 55754.99, "area_ha": 214500, "mwh": 80225.24, "co2": 65784.7, "briquettes": 52967.24, "biochar": 19514.25}, "2001": {"kg_ha": 191.29, "tonnes": 36882.62, "area_ha": 192810, "mwh": 53069.99, "co2": 43517.39, "briquettes": 35038.49, "biochar": 12908.92}, "2002": {"kg_ha": 171.67, "tonnes": 20600.4, "area_ha": 120000, "mwh": 29641.69, "co2": 24306.19, "briquettes": 19570.38, "biochar": 7210.14}, "2003": {"kg_ha": 180.16, "tonnes": 28755.34, "area_ha": 159610, "mwh": 41375.74, "co2": 33928.11, "briquettes": 27317.57, "biochar": 10064.37}, "2004": {"kg_ha": 181.74, "tonnes": 39757.44, "area_ha": 218760, "mwh": 57206.54, "co2": 46909.36, "briquettes": 37769.57, "biochar": 13915.1}, "2005": {"kg_ha": 179.06, "tonnes": 34977.58, "area_ha": 195340, "mwh": 50328.85, "co2": 41269.66, "briquettes": 33228.7, "biochar": 12242.15}, "2006": {"kg_ha": 188.64, "tonnes": 19861.91, "area_ha": 105290, "mwh": 28579.08, "co2": 23434.85, "briquettes": 18868.81, "biochar": 6951.67}, "2007": {"kg_ha": 363.6, "tonnes": 60539.4, "area_ha": 166500, "mwh": 87109.47, "co2": 71429.77, "briquettes": 57512.43, "biochar": 21188.79}, "2008": {"kg_ha": 138.3, "tonnes": 26124.87, "area_ha": 188900, "mwh": 37590.79, "co2": 30824.45, "briquettes": 24818.63, "biochar": 9143.7}, "2009": {"kg_ha": 187.71, "tonnes": 26172.41, "area_ha": 139430, "mwh": 37659.19, "co2": 30880.54, "briquettes": 24863.79, "biochar": 9160.34}, "2010": {"kg_ha": 235.95, "tonnes": 38214.46, "area_ha": 161960, "mwh": 54986.36, "co2": 45088.82, "briquettes": 36303.74, "biochar": 13375.06}, "2011": {"kg_ha": 175.75, "tonnes": 25687.62, "area_ha": 146160, "mwh": 36961.63, "co2": 30308.54, "briquettes": 24403.24, "biochar": 8990.67}, "2012": {"kg_ha": 168.62, "tonnes": 25331.78, "area_ha": 150230, "mwh": 36449.62, "co2": 29888.69, "briquettes": 24065.19, "biochar": 8866.12}, "2013": {"kg_ha": 226.1, "tonnes": 35063.59, "area_ha": 155080, "mwh": 50452.61, "co2": 41371.14, "briquettes": 33310.41, "biochar": 12272.26}, "2014": {"kg_ha": 145.82, "tonnes": 19162.21, "area_ha": 131410, "mwh": 27572.29, "co2": 22609.28, "briquettes": 18204.1, "biochar": 6706.77}, "2015": {"kg_ha": 259.29, "tonnes": 32818.34, "area_ha": 126570, "mwh": 47221.94, "co2": 38721.99, "briquettes": 31177.42, "biochar": 11486.42}, "2016": {"kg_ha": 162.67, "tonnes": 23993.82, "area_ha": 147500, "mwh": 34524.44, "co2": 28310.04, "briquettes": 22794.13, "biochar": 8397.84}, "2017": {"kg_ha": 406.66, "tonnes": 52674.67, "area_ha": 129530, "mwh": 75793.0, "co2": 62150.26, "briquettes": 50040.94, "biochar": 18436.13}}, "East Godavari": {"2000": {"kg_ha": 281.08, "tonnes": 312.0, "area_ha": 1110, "mwh": 448.93, "co2": 368.12, "briquettes": 296.4, "biochar": 109.2}, "2001": {"kg_ha": 333.33, "tonnes": 210.0, "area_ha": 630, "mwh": 302.17, "co2": 247.78, "briquettes": 199.5, "biochar": 73.5}, "2002": {"kg_ha": 200.0, "tonnes": 200.0, "area_ha": 1000, "mwh": 287.78, "co2": 235.98, "briquettes": 190.0, "biochar": 70.0}, "2003": {"kg_ha": 309.86, "tonnes": 220.0, "area_ha": 710, "mwh": 316.56, "co2": 259.58, "briquettes": 209.0, "biochar": 77.0}, "2004": {"kg_ha": 391.84, "tonnes": 192.0, "area_ha": 490, "mwh": 276.27, "co2": 226.54, "briquettes": 182.4, "biochar": 67.2}, "2005": {"kg_ha": 438.1, "tonnes": 276.0, "area_ha": 630, "mwh": 397.13, "co2": 325.65, "briquettes": 262.2, "biochar": 96.6}, "2006": {"kg_ha": 407.55, "tonnes": 216.0, "area_ha": 530, "mwh": 310.8, "co2": 254.86, "briquettes": 205.2, "biochar": 75.6}, "2007": {"kg_ha": 389.47, "tonnes": 222.0, "area_ha": 570, "mwh": 319.43, "co2": 261.93, "briquettes": 210.9, "biochar": 77.7}, "2008": {"kg_ha": 428.57, "tonnes": 210.0, "area_ha": 490, "mwh": 302.17, "co2": 247.78, "briquettes": 199.5, "biochar": 73.5}, "2009": {"kg_ha": 456.14, "tonnes": 260.0, "area_ha": 570, "mwh": 374.11, "co2": 306.77, "briquettes": 247.0, "biochar": 91.0}, "2010": {"kg_ha": 400.0, "tonnes": 144.0, "area_ha": 360, "mwh": 207.2, "co2": 169.9, "briquettes": 136.8, "biochar": 50.4}, "2011": {"kg_ha": 451.85, "tonnes": 122.0, "area_ha": 270, "mwh": 175.54, "co2": 143.94, "briquettes": 115.9, "biochar": 42.7}, "2012": {"kg_ha": 464.29, "tonnes": 130.0, "area_ha": 280, "mwh": 187.06, "co2": 153.39, "briquettes": 123.5, "biochar": 45.5}, "2013": {"kg_ha": 463.16, "tonnes": 88.0, "area_ha": 190, "mwh": 126.62, "co2": 103.83, "briquettes": 83.6, "biochar": 30.8}, "2014": {"kg_ha": 616.22, "tonnes": 228.0, "area_ha": 370, "mwh": 328.07, "co2": 269.02, "briquettes": 216.6, "biochar": 79.8}, "2015": {"kg_ha": 555.56, "tonnes": 200.0, "area_ha": 360, "mwh": 287.78, "co2": 235.98, "briquettes": 190.0, "biochar": 70.0}, "2016": {"kg_ha": 592.93, "tonnes": 183.81, "area_ha": 310, "mwh": 264.48, "co2": 216.87, "briquettes": 174.62, "biochar": 64.33}, "2017": {"kg_ha": 624.39, "tonnes": 99.9, "area_ha": 160, "mwh": 143.75, "co2": 117.88, "briquettes": 94.91, "biochar": 34.96}}, "Guntur": {"2000": {"kg_ha": 303.79, "tonnes": 3350.8, "area_ha": 11030, "mwh": 4821.43, "co2": 3953.57, "briquettes": 3183.26, "biochar": 1172.78}, "2001": {"kg_ha": 425.98, "tonnes": 3514.34, "area_ha": 8250, "mwh": 5056.74, "co2": 4146.53, "briquettes": 3338.62, "biochar": 1230.02}, "2002": {"kg_ha": 323.55, "tonnes": 2336.03, "area_ha": 7220, "mwh": 3361.29, "co2": 2756.26, "briquettes": 2219.23, "biochar": 817.61}, "2003": {"kg_ha": 287.63, "tonnes": 3431.43, "area_ha": 11930, "mwh": 4937.45, "co2": 4048.71, "briquettes": 3259.86, "biochar": 1201.0}, "2004": {"kg_ha": 439.69, "tonnes": 3878.07, "area_ha": 8820, "mwh": 5580.11, "co2": 4575.69, "briquettes": 3684.17, "biochar": 1357.32}, "2005": {"kg_ha": 533.27, "tonnes": 5108.73, "area_ha": 9580, "mwh": 7350.89, "co2": 6027.73, "briquettes": 4853.29, "biochar": 1788.06}, "2006": {"kg_ha": 483.42, "tonnes": 3456.45, "area_ha": 7150, "mwh": 4973.45, "co2": 4078.23, "briquettes": 3283.63, "biochar": 1209.76}, "2007": {"kg_ha": 302.06, "tonnes": 3522.02, "area_ha": 11660, "mwh": 5067.8, "co2": 4155.6, "briquettes": 3345.92, "biochar": 1232.71}, "2008": {"kg_ha": 443.97, "tonnes": 4279.87, "area_ha": 9640, "mwh": 6158.26, "co2": 5049.77, "briquettes": 4065.88, "biochar": 1497.95}, "2009": {"kg_ha": 538.23, "tonnes": 3945.23, "area_ha": 7330, "mwh": 5676.75, "co2": 4654.93, "briquettes": 3747.97, "biochar": 1380.83}, "2010": {"kg_ha": 477.65, "tonnes": 4074.35, "area_ha": 8530, "mwh": 5862.54, "co2": 4807.28, "briquettes": 3870.63, "biochar": 1426.02}, "2011": {"kg_ha": 501.1, "tonnes": 3998.78, "area_ha": 7980, "mwh": 5753.8, "co2": 4718.12, "briquettes": 3798.84, "biochar": 1399.57}, "2012": {"kg_ha": 421.29, "tonnes": 4566.78, "area_ha": 10840, "mwh": 6571.09, "co2": 5388.29, "briquettes": 4338.44, "biochar": 1598.37}, "2013": {"kg_ha": 631.86, "tonnes": 5282.35, "area_ha": 8360, "mwh": 7600.71, "co2": 6232.58, "briquettes": 5018.23, "biochar": 1848.82}, "2014": {"kg_ha": 784.15, "tonnes": 5434.16, "area_ha": 6930, "mwh": 7819.15, "co2": 6411.7, "briquettes": 5162.45, "biochar": 1901.96}, "2015": {"kg_ha": 633.89, "tonnes": 3701.92, "area_ha": 5840, "mwh": 5326.65, "co2": 4367.85, "briquettes": 3516.82, "biochar": 1295.67}, "2016": {"kg_ha": 615.06, "tonnes": 4053.25, "area_ha": 6590, "mwh": 5832.18, "co2": 4782.39, "briquettes": 3850.59, "biochar": 1418.64}, "2017": {"kg_ha": 724.42, "tonnes": 4259.59, "area_ha": 5880, "mwh": 6129.08, "co2": 5025.85, "briquettes": 4046.61, "biochar": 1490.86}}, "Kadapa YSR": {"2000": {"kg_ha": 233.8, "tonnes": 41347.53, "area_ha": 176850, "mwh": 59494.5, "co2": 48785.49, "briquettes": 39280.15, "biochar": 14471.64}, "2001": {"kg_ha": 112.18, "tonnes": 15704.08, "area_ha": 139990, "mwh": 22596.43, "co2": 18529.07, "briquettes": 14918.88, "biochar": 5496.43}, "2002": {"kg_ha": 69.81, "tonnes": 7399.86, "area_ha": 106000, "mwh": 10647.58, "co2": 8731.02, "briquettes": 7029.87, "biochar": 2589.95}, "2003": {"kg_ha": 85.22, "tonnes": 11027.47, "area_ha": 129400, "mwh": 15867.3, "co2": 13011.19, "briquettes": 10476.1, "biochar": 3859.61}, "2004": {"kg_ha": 141.44, "tonnes": 30966.87, "area_ha": 218940, "mwh": 44557.89, "co2": 36537.47, "briquettes": 29418.53, "biochar": 10838.4}, "2005": {"kg_ha": 57.27, "tonnes": 11873.22, "area_ha": 207320, "mwh": 17084.24, "co2": 14009.08, "briquettes": 11279.56, "biochar": 4155.63}, "2006": {"kg_ha": 145.76, "tonnes": 9126.03, "area_ha": 62610, "mwh": 13131.34, "co2": 10767.7, "briquettes": 8669.73, "biochar": 3194.11}, "2007": {"kg_ha": 359.37, "tonnes": 62084.76, "area_ha": 172760, "mwh": 89333.07, "co2": 73253.12, "briquettes": 58980.52, "biochar": 21729.67}, "2008": {"kg_ha": 91.3, "tonnes": 12874.21, "area_ha": 141010, "mwh": 18524.56, "co2": 15190.14, "briquettes": 12230.5, "biochar": 4505.97}, "2009": {"kg_ha": 147.06, "tonnes": 19135.45, "area_ha": 130120, "mwh": 27533.79, "co2": 22577.71, "briquettes": 18178.68, "biochar": 6697.41}, "2010": {"kg_ha": 172.95, "tonnes": 27775.77, "area_ha": 160600, "mwh": 39966.25, "co2": 32772.32, "briquettes": 26386.98, "biochar": 9721.52}, "2011": {"kg_ha": 212.13, "tonnes": 12104.14, "area_ha": 57060, "mwh": 17416.51, "co2": 14281.54, "briquettes": 11498.93, "biochar": 4236.45}, "2012": {"kg_ha": 133.47, "tonnes": 8618.16, "area_ha": 64570, "mwh": 12400.57, "co2": 10168.47, "briquettes": 8187.25, "biochar": 3016.36}, "2013": {"kg_ha": 271.15, "tonnes": 16136.14, "area_ha": 59510, "mwh": 23218.11, "co2": 19038.85, "briquettes": 15329.33, "biochar": 5647.65}, "2014": {"kg_ha": 163.86, "tonnes": 4479.93, "area_ha": 27340, "mwh": 6446.12, "co2": 5285.82, "briquettes": 4255.93, "biochar": 1567.98}, "2015": {"kg_ha": 330.2, "tonnes": 16727.93, "area_ha": 50660, "mwh": 24069.63, "co2": 19737.1, "briquettes": 15891.53, "biochar": 5854.78}, "2016": {"kg_ha": 200.41, "tonnes": 13108.82, "area_ha": 65410, "mwh": 18862.14, "co2": 15466.95, "briquettes": 12453.38, "biochar": 4588.09}, "2017": {"kg_ha": 323.0, "tonnes": 14331.51, "area_ha": 44370, "mwh": 20621.45, "co2": 16909.59, "briquettes": 13614.93, "biochar": 5016.03}}, "Krishna": {"2000": {"kg_ha": 367.71, "tonnes": 3279.97, "area_ha": 8920, "mwh": 4719.51, "co2": 3870.0, "briquettes": 3115.97, "biochar": 1147.99}, "2001": {"kg_ha": 371.3, "tonnes": 2406.02, "area_ha": 6480, "mwh": 3462.0, "co2": 2838.84, "briquettes": 2285.72, "biochar": 842.11}, "2002": {"kg_ha": 350.0, "tonnes": 1400.0, "area_ha": 4000, "mwh": 2014.44, "co2": 1651.84, "briquettes": 1330.0, "biochar": 490.0}, "2003": {"kg_ha": 318.05, "tonnes": 2414.0, "area_ha": 7590, "mwh": 3473.48, "co2": 2848.25, "briquettes": 2293.3, "biochar": 844.9}, "2004": {"kg_ha": 469.57, "tonnes": 4536.05, "area_ha": 9660, "mwh": 6526.87, "co2": 5352.03, "briquettes": 4309.25, "biochar": 1587.62}, "2005": {"kg_ha": 416.89, "tonnes": 2763.98, "area_ha": 6630, "mwh": 3977.06, "co2": 3261.19, "briquettes": 2625.78, "biochar": 967.39}, "2006": {"kg_ha": 500.96, "tonnes": 3146.03, "area_ha": 6280, "mwh": 4526.79, "co2": 3711.97, "briquettes": 2988.73, "biochar": 1101.11}, "2007": {"kg_ha": 470.97, "tonnes": 3942.02, "area_ha": 8370, "mwh": 5672.13, "co2": 4651.15, "briquettes": 3744.92, "biochar": 1379.71}, "2008": {"kg_ha": 499.14, "tonnes": 4077.97, "area_ha": 8170, "mwh": 5867.75, "co2": 4811.55, "briquettes": 3874.07, "biochar": 1427.29}, "2009": {"kg_ha": 395.29, "tonnes": 2182.0, "area_ha": 5520, "mwh": 3139.66, "co2": 2574.52, "briquettes": 2072.9, "biochar": 763.7}, "2010": {"kg_ha": 415.57, "tonnes": 1707.99, "area_ha": 4110, "mwh": 2457.61, "co2": 2015.24, "briquettes": 1622.59, "biochar": 597.8}, "2011": {"kg_ha": 411.82, "tonnes": 1742.0, "area_ha": 4230, "mwh": 2506.54, "co2": 2055.36, "briquettes": 1654.9, "biochar": 609.7}, "2012": {"kg_ha": 480.5, "tonnes": 2316.01, "area_ha": 4820, "mwh": 3332.48, "co2": 2732.63, "briquettes": 2200.21, "biochar": 810.6}, "2013": {"kg_ha": 371.22, "tonnes": 1496.02, "area_ha": 4030, "mwh": 2152.61, "co2": 1765.14, "briquettes": 1421.22, "biochar": 523.61}, "2014": {"kg_ha": 493.48, "tonnes": 908.0, "area_ha": 1840, "mwh": 1306.51, "co2": 1071.34, "briquettes": 862.6, "biochar": 317.8}, "2015": {"kg_ha": 677.01, "tonnes": 1266.01, "area_ha": 1870, "mwh": 1821.65, "co2": 1493.75, "briquettes": 1202.71, "biochar": 443.1}, "2016": {"kg_ha": 760.37, "tonnes": 1224.2, "area_ha": 1610, "mwh": 1761.49, "co2": 1444.42, "briquettes": 1162.99, "biochar": 428.47}, "2017": {"kg_ha": 609.82, "tonnes": 1128.17, "area_ha": 1850, "mwh": 1623.31, "co2": 1331.11, "briquettes": 1071.76, "biochar": 394.86}}, "Kurnool": {"2000": {"kg_ha": 220.44, "tonnes": 53690.37, "area_ha": 243560, "mwh": 77254.48, "co2": 63348.67, "briquettes": 51005.85, "biochar": 18791.63}, "2001": {"kg_ha": 209.64, "tonnes": 44081.0, "area_ha": 210270, "mwh": 63427.66, "co2": 52010.68, "briquettes": 41876.95, "biochar": 15428.35}, "2002": {"kg_ha": 132.13, "tonnes": 24856.3, "area_ha": 188120, "mwh": 35765.45, "co2": 29327.67, "briquettes": 23613.48, "biochar": 8699.7}, "2003": {"kg_ha": 207.54, "tonnes": 39559.2, "area_ha": 190610, "mwh": 56921.29, "co2": 46675.46, "briquettes": 37581.24, "biochar": 13845.72}, "2004": {"kg_ha": 206.91, "tonnes": 41926.17, "area_ha": 202630, "mwh": 60327.1, "co2": 49468.22, "briquettes": 39829.86, "biochar": 14674.16}, "2005": {"kg_ha": 237.67, "tonnes": 60149.52, "area_ha": 253080, "mwh": 86548.48, "co2": 70969.75, "briquettes": 57142.04, "biochar": 21052.33}, "2006": {"kg_ha": 153.21, "tonnes": 32443.75, "area_ha": 211760, "mwh": 46682.95, "co2": 38280.02, "briquettes": 30821.56, "biochar": 11355.31}, "2007": {"kg_ha": 281.2, "tonnes": 67077.45, "area_ha": 238540, "mwh": 96517.0, "co2": 79143.94, "briquettes": 63723.58, "biochar": 23477.11}, "2008": {"kg_ha": 144.72, "tonnes": 35842.8, "area_ha": 247670, "mwh": 51573.81, "co2": 42290.52, "briquettes": 34050.66, "biochar": 12544.98}, "2009": {"kg_ha": 131.99, "tonnes": 25417.31, "area_ha": 192570, "mwh": 36572.68, "co2": 29989.6, "briquettes": 24146.44, "biochar": 8896.06}, "2010": {"kg_ha": 170.12, "tonnes": 30657.33, "area_ha": 180210, "mwh": 44112.49, "co2": 36172.24, "briquettes": 29124.46, "biochar": 10730.07}, "2011": {"kg_ha": 96.28, "tonnes": 9851.37, "area_ha": 102320, "mwh": 14175.03, "co2": 11623.52, "briquettes": 9358.8, "biochar": 3447.98}, "2012": {"kg_ha": 190.93, "tonnes": 27211.34, "area_ha": 142520, "mwh": 39154.09, "co2": 32106.35, "briquettes": 25850.77, "biochar": 9523.97}, "2013": {"kg_ha": 205.51, "tonnes": 34704.47, "area_ha": 168870, "mwh": 49935.88, "co2": 40947.42, "briquettes": 32969.25, "biochar": 12146.56}, "2014": {"kg_ha": 186.44, "tonnes": 20264.16, "area_ha": 108690, "mwh": 29157.87, "co2": 23909.45, "briquettes": 19250.95, "biochar": 7092.46}, "2015": {"kg_ha": 221.68, "tonnes": 19498.97, "area_ha": 87960, "mwh": 28056.85, "co2": 23006.62, "briquettes": 18524.02, "biochar": 6824.64}, "2016": {"kg_ha": 209.42, "tonnes": 27632.97, "area_ha": 131950, "mwh": 39760.77, "co2": 32603.83, "briquettes": 26251.32, "biochar": 9671.54}, "2017": {"kg_ha": 305.15, "tonnes": 30756.07, "area_ha": 100790, "mwh": 44254.57, "co2": 36288.75, "briquettes": 29218.27, "biochar": 10764.62}}, "S.P.S. Nellore": {"2000": {"kg_ha": 311.05, "tonnes": 5045.23, "area_ha": 16220, "mwh": 7259.53, "co2": 5952.81, "briquettes": 4792.97, "biochar": 1765.83}, "2001": {"kg_ha": 427.66, "tonnes": 5208.9, "area_ha": 12180, "mwh": 7495.03, "co2": 6145.92, "briquettes": 4948.45, "biochar": 1823.11}, "2002": {"kg_ha": 395.58, "tonnes": 5008.04, "area_ha": 12660, "mwh": 7206.01, "co2": 5908.93, "briquettes": 4757.64, "biochar": 1752.81}, "2003": {"kg_ha": 385.39, "tonnes": 6501.53, "area_ha": 16870, "mwh": 9354.98, "co2": 7671.08, "briquettes": 6176.45, "biochar": 2275.54}, "2004": {"kg_ha": 475.71, "tonnes": 7116.62, "area_ha": 14960, "mwh": 10240.03, "co2": 8396.82, "briquettes": 6760.79, "biochar": 2490.82}, "2005": {"kg_ha": 440.24, "tonnes": 7519.3, "area_ha": 17080, "mwh": 10819.44, "co2": 8871.94, "briquettes": 7143.34, "biochar": 2631.76}, "2006": {"kg_ha": 506.54, "tonnes": 6630.61, "area_ha": 13090, "mwh": 9540.71, "co2": 7823.38, "briquettes": 6299.08, "biochar": 2320.71}, "2007": {"kg_ha": 449.45, "tonnes": 6881.08, "area_ha": 15310, "mwh": 9901.11, "co2": 8118.91, "briquettes": 6537.03, "biochar": 2408.38}, "2008": {"kg_ha": 534.59, "tonnes": 8708.47, "area_ha": 16290, "mwh": 12530.52, "co2": 10275.03, "briquettes": 8273.05, "biochar": 3047.96}, "2009": {"kg_ha": 570.8, "tonnes": 7112.17, "area_ha": 12460, "mwh": 10233.62, "co2": 8391.57, "briquettes": 6756.56, "biochar": 2489.26}, "2010": {"kg_ha": 438.31, "tonnes": 5873.35, "area_ha": 13400, "mwh": 8451.1, "co2": 6929.9, "briquettes": 5579.68, "biochar": 2055.67}, "2011": {"kg_ha": 515.33, "tonnes": 7106.4, "area_ha": 13790, "mwh": 10225.32, "co2": 8384.76, "briquettes": 6751.08, "biochar": 2487.24}, "2012": {"kg_ha": 570.39, "tonnes": 9930.49, "area_ha": 17410, "mwh": 14288.87, "co2": 11716.87, "briquettes": 9433.97, "biochar": 3475.67}, "2013": {"kg_ha": 589.18, "tonnes": 10416.7, "area_ha": 17680, "mwh": 14988.47, "co2": 12290.55, "briquettes": 9895.86, "biochar": 3645.84}, "2014": {"kg_ha": 623.63, "tonnes": 6448.33, "area_ha": 10340, "mwh": 9278.43, "co2": 7608.31, "briquettes": 6125.91, "biochar": 2256.92}, "2015": {"kg_ha": 651.54, "tonnes": 8496.08, "area_ha": 13040, "mwh": 12224.92, "co2": 10024.43, "briquettes": 8071.28, "biochar": 2973.63}, "2016": {"kg_ha": 571.42, "tonnes": 10234.13, "area_ha": 17910, "mwh": 14725.78, "co2": 12075.14, "briquettes": 9722.42, "biochar": 3581.95}, "2017": {"kg_ha": 677.78, "tonnes": 9278.81, "area_ha": 13690, "mwh": 13351.18, "co2": 10947.97, "briquettes": 8814.87, "biochar": 3247.58}}, "Srikakulam": {"2000": {"kg_ha": 187.29, "tonnes": 13100.94, "area_ha": 69950, "mwh": 18850.8, "co2": 15457.66, "briquettes": 12445.89, "biochar": 4585.33}, "2001": {"kg_ha": 159.49, "tonnes": 9851.7, "area_ha": 61770, "mwh": 14175.5, "co2": 11623.91, "briquettes": 9359.11, "biochar": 3448.1}, "2002": {"kg_ha": 154.72, "tonnes": 8200.16, "area_ha": 53000, "mwh": 11799.12, "co2": 9675.28, "briquettes": 7790.15, "biochar": 2870.06}, "2003": {"kg_ha": 192.64, "tonnes": 10988.19, "area_ha": 57040, "mwh": 15810.78, "co2": 12964.84, "briquettes": 10438.78, "biochar": 3845.87}, "2004": {"kg_ha": 176.54, "tonnes": 10979.02, "area_ha": 62190, "mwh": 15797.59, "co2": 12954.02, "briquettes": 10430.07, "biochar": 3842.66}, "2005": {"kg_ha": 219.56, "tonnes": 12255.84, "area_ha": 55820, "mwh": 17634.79, "co2": 14460.53, "briquettes": 11643.05, "biochar": 4289.54}, "2006": {"kg_ha": 186.5, "tonnes": 10266.82, "area_ha": 55050, "mwh": 14772.81, "co2": 12113.7, "briquettes": 9753.48, "biochar": 3593.39}, "2007": {"kg_ha": 255.52, "tonnes": 12454.04, "area_ha": 48740, "mwh": 17919.98, "co2": 14694.38, "briquettes": 11831.34, "biochar": 4358.91}, "2008": {"kg_ha": 207.62, "tonnes": 10163.0, "area_ha": 48950, "mwh": 14623.43, "co2": 11991.21, "briquettes": 9654.85, "biochar": 3557.05}, "2009": {"kg_ha": 228.58, "tonnes": 10050.66, "area_ha": 43970, "mwh": 14461.78, "co2": 11858.66, "briquettes": 9548.13, "biochar": 3517.73}, "2010": {"kg_ha": 255.61, "tonnes": 10168.17, "area_ha": 39780, "mwh": 14630.87, "co2": 11997.31, "briquettes": 9659.76, "biochar": 3558.86}, "2011": {"kg_ha": 268.9, "tonnes": 8352.03, "area_ha": 31060, "mwh": 12017.64, "co2": 9854.46, "briquettes": 7934.43, "biochar": 2923.21}, "2012": {"kg_ha": 283.55, "tonnes": 6076.48, "area_ha": 21430, "mwh": 8743.38, "co2": 7169.57, "briquettes": 5772.66, "biochar": 2126.77}, "2013": {"kg_ha": 277.87, "tonnes": 6021.44, "area_ha": 21670, "mwh": 8664.18, "co2": 7104.63, "briquettes": 5720.37, "biochar": 2107.5}, "2014": {"kg_ha": 295.33, "tonnes": 3792.04, "area_ha": 12840, "mwh": 5456.32, "co2": 4474.18, "briquettes": 3602.44, "biochar": 1327.21}, "2015": {"kg_ha": 275.79, "tonnes": 3132.97, "area_ha": 11360, "mwh": 4508.0, "co2": 3696.56, "briquettes": 2976.32, "biochar": 1096.54}, "2016": {"kg_ha": 347.6, "tonnes": 3149.26, "area_ha": 9060, "mwh": 4531.44, "co2": 3715.78, "briquettes": 2991.8, "biochar": 1102.24}, "2017": {"kg_ha": 350.55, "tonnes": 3060.3, "area_ha": 8730, "mwh": 4403.43, "co2": 3610.81, "briquettes": 2907.28, "biochar": 1071.11}}, "Visakhapatnam": {"2000": {"kg_ha": 202.89, "tonnes": 10166.82, "area_ha": 50110, "mwh": 14628.92, "co2": 11995.71, "briquettes": 9658.48, "biochar": 3558.39}, "2001": {"kg_ha": 198.33, "tonnes": 8091.86, "area_ha": 40800, "mwh": 11643.29, "co2": 9547.5, "briquettes": 7687.27, "biochar": 2832.15}, "2002": {"kg_ha": 167.74, "tonnes": 5199.94, "area_ha": 31000, "mwh": 7482.14, "co2": 6135.35, "briquettes": 4939.94, "biochar": 1819.98}, "2003": {"kg_ha": 201.05, "tonnes": 6912.1, "area_ha": 34380, "mwh": 9945.74, "co2": 8155.51, "briquettes": 6566.49, "biochar": 2419.24}, "2004": {"kg_ha": 183.66, "tonnes": 6147.1, "area_ha": 33470, "mwh": 8844.99, "co2": 7252.89, "briquettes": 5839.74, "biochar": 2151.49}, "2005": {"kg_ha": 206.2, "tonnes": 5588.02, "area_ha": 27100, "mwh": 8040.54, "co2": 6593.24, "briquettes": 5308.62, "biochar": 1955.81}, "2006": {"kg_ha": 202.62, "tonnes": 5334.98, "area_ha": 26330, "mwh": 7676.44, "co2": 6294.68, "briquettes": 5068.23, "biochar": 1867.24}, "2007": {"kg_ha": 253.0, "tonnes": 5899.96, "area_ha": 23320, "mwh": 8489.39, "co2": 6961.3, "briquettes": 5604.96, "biochar": 2064.99}, "2008": {"kg_ha": 223.41, "tonnes": 5238.96, "area_ha": 23450, "mwh": 7538.28, "co2": 6181.39, "briquettes": 4977.01, "biochar": 1833.64}, "2009": {"kg_ha": 219.0, "tonnes": 4209.18, "area_ha": 19220, "mwh": 6056.54, "co2": 4966.36, "briquettes": 3998.72, "biochar": 1473.21}, "2010": {"kg_ha": 229.83, "tonnes": 3959.97, "area_ha": 17230, "mwh": 5697.96, "co2": 4672.33, "briquettes": 3761.97, "biochar": 1385.99}, "2011": {"kg_ha": 256.37, "tonnes": 3202.06, "area_ha": 12490, "mwh": 4607.41, "co2": 3778.08, "briquettes": 3041.96, "biochar": 1120.72}, "2012": {"kg_ha": 247.59, "tonnes": 2290.21, "area_ha": 9250, "mwh": 3295.36, "co2": 2702.2, "briquettes": 2175.7, "biochar": 801.57}, "2013": {"kg_ha": 267.31, "tonnes": 2205.31, "area_ha": 8250, "mwh": 3173.2, "co2": 2602.02, "briquettes": 2095.04, "biochar": 771.86}, "2014": {"kg_ha": 307.37, "tonnes": 1917.99, "area_ha": 6240, "mwh": 2759.77, "co2": 2263.01, "briquettes": 1822.09, "biochar": 671.3}, "2015": {"kg_ha": 285.03, "tonnes": 1485.01, "area_ha": 5210, "mwh": 2136.76, "co2": 1752.14, "briquettes": 1410.76, "biochar": 519.75}, "2016": {"kg_ha": 280.29, "tonnes": 1306.15, "area_ha": 4660, "mwh": 1879.4, "co2": 1541.11, "briquettes": 1240.84, "biochar": 457.15}, "2017": {"kg_ha": 291.41, "tonnes": 1107.36, "area_ha": 3800, "mwh": 1593.37, "co2": 1306.56, "briquettes": 1051.99, "biochar": 387.58}}, "West Godavari": {"2000": {"kg_ha": 359.9, "tonnes": 1489.99, "area_ha": 4140, "mwh": 2143.93, "co2": 1758.02, "briquettes": 1415.49, "biochar": 521.5}, "2001": {"kg_ha": 436.8, "tonnes": 1472.02, "area_ha": 3370, "mwh": 2118.07, "co2": 1736.82, "briquettes": 1398.42, "biochar": 515.21}, "2002": {"kg_ha": 333.33, "tonnes": 999.99, "area_ha": 3000, "mwh": 1438.87, "co2": 1179.87, "briquettes": 949.99, "biochar": 350.0}, "2003": {"kg_ha": 372.35, "tonnes": 1158.01, "area_ha": 3110, "mwh": 1666.25, "co2": 1366.32, "briquettes": 1100.11, "biochar": 405.3}, "2004": {"kg_ha": 427.55, "tonnes": 1676.0, "area_ha": 3920, "mwh": 2411.58, "co2": 1977.5, "briquettes": 1592.2, "biochar": 586.6}, "2005": {"kg_ha": 655.13, "tonnes": 2876.02, "area_ha": 4390, "mwh": 4138.27, "co2": 3393.38, "briquettes": 2732.22, "biochar": 1006.61}, "2006": {"kg_ha": 399.58, "tonnes": 1902.0, "area_ha": 4760, "mwh": 2736.77, "co2": 2244.15, "briquettes": 1806.9, "biochar": 665.7}, "2007": {"kg_ha": 468.5, "tonnes": 2721.98, "area_ha": 5810, "mwh": 3916.63, "co2": 3211.64, "briquettes": 2585.88, "biochar": 952.69}, "2008": {"kg_ha": 373.99, "tonnes": 3997.95, "area_ha": 10690, "mwh": 5752.61, "co2": 4717.14, "briquettes": 3798.05, "biochar": 1399.28}, "2009": {"kg_ha": 432.31, "tonnes": 2676.0, "area_ha": 6190, "mwh": 3850.47, "co2": 3157.39, "briquettes": 2542.2, "biochar": 936.6}, "2010": {"kg_ha": 406.46, "tonnes": 2389.98, "area_ha": 5880, "mwh": 3438.92, "co2": 2819.91, "briquettes": 2270.48, "biochar": 836.49}, "2011": {"kg_ha": 444.14, "tonnes": 2878.03, "area_ha": 6480, "mwh": 4141.17, "co2": 3395.76, "briquettes": 2734.13, "biochar": 1007.31}, "2012": {"kg_ha": 534.26, "tonnes": 3445.98, "area_ha": 6450, "mwh": 4958.38, "co2": 4065.87, "briquettes": 3273.68, "biochar": 1206.09}, "2013": {"kg_ha": 525.93, "tonnes": 2272.02, "area_ha": 4320, "mwh": 3269.18, "co2": 2680.73, "briquettes": 2158.42, "biochar": 795.21}, "2014": {"kg_ha": 504.64, "tonnes": 1196.0, "area_ha": 2370, "mwh": 1720.91, "co2": 1411.15, "briquettes": 1136.2, "biochar": 418.6}, "2015": {"kg_ha": 643.6, "tonnes": 2362.01, "area_ha": 3670, "mwh": 3398.67, "co2": 2786.91, "briquettes": 2243.91, "biochar": 826.7}, "2016": {"kg_ha": 675.81, "tonnes": 2757.3, "area_ha": 4080, "mwh": 3967.45, "co2": 3253.31, "briquettes": 2619.43, "biochar": 965.05}, "2017": {"kg_ha": 689.63, "tonnes": 1827.52, "area_ha": 2650, "mwh": 2629.6, "co2": 2156.27, "briquettes": 1736.14, "biochar": 639.63}}};
+
+    const districtSelect = document.getElementById('heroDistrictSelect');
+    const districtSearch = document.getElementById('heroDistrictSearch');
+    const yearSelect = document.getElementById('heroYearSelect');
+    const estimateBtn = document.getElementById('heroEstimateBtn');
+    const resetBtn = document.getElementById('heroResetBtn');
+
+    const displayYield = document.getElementById('displayBiomassKgHa');
+    const displayYieldAcre = document.getElementById('displayBiomassKgAcre');
+    const displayTotal = document.getElementById('displayBiomassTonnes');
+    const displayRevenue = document.getElementById('displayBiomassRevenue');
+    const displayArea = document.getElementById('displayCropArea');
+    const displayEnergy = document.getElementById('displayEnergyMwh');
+    const displayHouseholds = document.getElementById('displayHouseholds');
+    const displayCo2 = document.getElementById('displayCo2Offset');
+    const calibrationTag = document.getElementById('calibrationTag');
+    const plainSummary = document.getElementById('plainLanguageSummary');
+    const resultGrid = document.getElementById('regionalResultGrid');
+
+    // Number Counter Animation
+    function animateValue(element, start, end, duration, decimals = 2, isFormatted = false) {
+        if (!element) return;
+        const startTime = performance.now();
+        function update(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const ease = 1 - Math.pow(1 - progress, 3);
+            const current = start + (end - start) * ease;
+            if (isFormatted) {
+                element.textContent = current.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+            } else {
+                element.textContent = current.toFixed(decimals);
+            }
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            } else {
+                if (isFormatted) {
+                    element.textContent = end.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+                } else {
+                    element.textContent = end.toFixed(decimals);
+                }
+            }
+        }
+        requestAnimationFrame(update);
+    }
+
+    // Update Estimation Metrics
+    function updateEstimationMetrics(animate = true) {
+        if (!districtSelect || !yearSelect) return;
+        const district = districtSelect.value;
+        const year = parseInt(yearSelect.value, 10);
+
+        let data = null;
+        if (BIOMASS_DATABASE[district] && BIOMASS_DATABASE[district][year]) {
+            data = BIOMASS_DATABASE[district][year];
+        } else if (BIOMASS_DATABASE[district]) {
+            const availableYears = Object.keys(BIOMASS_DATABASE[district]);
+            const latestYear = availableYears[availableYears.length - 1];
+            data = BIOMASS_DATABASE[district][latestYear];
+        }
+
+        if (!data) return;
+
+        if (animate && resultGrid) {
+            resultGrid.classList.add('is-loading');
+            setTimeout(() => {
+                if (resultGrid) resultGrid.classList.remove('is-loading');
+            }, 180);
+        }
+
+        const currentYield = displayYield ? (parseFloat(displayYield.textContent.replace(/,/g, '')) || 0) : 0;
+        const currentTotal = displayTotal ? (parseFloat(displayTotal.textContent.replace(/,/g, '')) || 0) : 0;
+
+        if (displayYield) {
+            if (animate) animateValue(displayYield, currentYield, data.kg_ha, 450, 2, false);
+            else displayYield.textContent = data.kg_ha.toFixed(2);
+        }
+
+        if (displayTotal) {
+            if (animate) animateValue(displayTotal, currentTotal, data.tonnes, 550, 2, true);
+            else displayTotal.textContent = data.tonnes.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        if (displayYieldAcre) displayYieldAcre.textContent = (data.kg_ha * 0.404686).toFixed(1);
+        if (displayRevenue) displayRevenue.textContent = ((data.tonnes * 2000) / 10000000).toFixed(1);
+        if (displayHouseholds) displayHouseholds.textContent = Math.round(data.mwh / 2.0).toLocaleString('en-US');
+        if (displayArea) displayArea.textContent = (data.area_ha || 0).toLocaleString('en-US') + ' ha';
+        if (displayEnergy) displayEnergy.textContent = Math.round(data.mwh || 0).toLocaleString('en-US') + ' MWh';
+        if (displayCo2) displayCo2.textContent = Math.round(data.co2 || 0).toLocaleString('en-US') + ' t';
+
+        if (calibrationTag) {
+            calibrationTag.innerHTML = 'Calibrated for ' + district + ', Season ' + year + ' &bull; Hybrid VotingRegressor Ensemble';
+        }
+
+        if (plainSummary) {
+            const tonnesFmt = Math.round(data.tonnes).toLocaleString('en-US');
+            const areaFmt = (data.area_ha || 0).toLocaleString('en-US');
+            const mwhFmt = Math.round(data.mwh).toLocaleString('en-US');
+            const co2Fmt = Math.round(data.co2).toLocaleString('en-US');
+
+            plainSummary.innerHTML = 
+                'In <strong>' + district + '</strong> during the <strong>' + year + ' Season</strong>, groundnut fields generated approximately ' +
+                '<strong>' + tonnesFmt + ' tonnes</strong> of shell byproduct across <strong>' + areaFmt + ' hectares</strong>. ' +
+                'If delivered to regional bioenergy and briquette plants instead of being burned, this volume can generate ' +
+                '<strong>' + mwhFmt + ' MWh</strong> of clean power while avoiding ' +
+                '<strong>' + co2Fmt + ' tonnes</strong> of dirty coal emissions.';
+        }
+    }
+
+    // Searchable District Filter
+    if (districtSearch && districtSelect) {
+        districtSearch.addEventListener('input', function() {
+            const query = this.value.trim().toLowerCase();
+            let matchedOption = null;
+            Array.from(districtSelect.options).forEach(opt => {
+                const text = opt.textContent.toLowerCase();
+                const matches = text.includes(query);
+                opt.style.display = matches ? '' : 'none';
+                if (matches && !matchedOption) {
+                    matchedOption = opt;
+                }
+            });
+            if (matchedOption && query.length > 0) {
+                districtSelect.value = matchedOption.value;
+                updateEstimationMetrics(true);
+            }
+        });
+    }
+
+    // Quick Season Chips
+    const seasonChips = document.querySelectorAll('.season-chip');
+    seasonChips.forEach(chip => {
+        chip.addEventListener('click', function() {
+            seasonChips.forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            const yearVal = this.dataset.year;
+            if (yearSelect) {
+                yearSelect.value = yearVal;
+                updateEstimationMetrics(true);
+            }
+        });
+    });
+
+    // Reset Button
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            if (districtSelect) districtSelect.value = 'Ananthapur';
+            if (districtSearch) districtSearch.value = '';
+            Array.from(districtSelect.options).forEach(opt => opt.style.display = '');
+            if (yearSelect) yearSelect.value = '2017';
+            seasonChips.forEach(c => c.classList.toggle('active', c.dataset.year === '2017'));
+            updateEstimationMetrics(true);
+        });
+    }
+
+    // Estimate Button Click
+    if (estimateBtn) {
+        estimateBtn.addEventListener('click', function() {
+            updateEstimationMetrics(true);
+            switchHomeTopic('regional', false);
+            const resultsEl = document.getElementById('results-anchor');
+            if (resultsEl) {
+                resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    }
+
+    if (districtSelect) {
+        districtSelect.addEventListener('change', function() {
+            updateEstimationMetrics(true);
+        });
+    }
+
+    if (yearSelect) {
+        yearSelect.addEventListener('change', function() {
+            const currentYear = this.value;
+            seasonChips.forEach(c => c.classList.toggle('active', c.dataset.year === currentYear));
+            updateEstimationMetrics(true);
+        });
+    }
+
+    // URL Hash Routing Support
+    function handleHashRouting() {
+        const hash = window.location.hash.toLowerCase();
+        if (hash === '#pipeline' || hash === '#methodology') {
+            switchHomeTopic('pipeline', false);
+        } else if (hash === '#utilization' || hash === '#about') {
+            switchHomeTopic('utilization', false);
+        } else if (hash === '#tools') {
+            switchHomeTopic('tools', false);
+        } else {
+            switchHomeTopic('regional', false);
+        }
+    }
+
+    window.addEventListener('hashchange', handleHashRouting);
+    handleHashRouting();
+    updateEstimationMetrics(false);
+
+    // ==========================================
+    // Mac-Dock Algorithm Pipeline Execution
+    // ==========================================
+const PIPELINE_DATA = {
+        1: {
+            number: "01",
+            stageTag: "STAGE 01 OF 09 • EARTH OBSERVATION",
+            title: "1. Data Collection & Satellite Ingestion",
+            icon: "🛰️",
+            simpleTitle: "Step 1: Gathering Farm & Satellite Records",
+            simpleSummary: "We gather 18 years of historical harvest records from ICRISAT, combined with daily satellite pictures from NASA and MODIS to monitor crop health and rainfall across 11 districts.",
+            whyItMatters: "Eliminates the need for expensive physical field surveys. Satellites monitor millions of hectares simultaneously from orbit.",
+            input: "ICRISAT ground harvest statistics + NASA POWER weather + MODIS 250m satellite canopy reflectance",
+            process: "Extract & synchronize 16-day NDVI vegetation health, daily rainfall, temperature, relative humidity, and solar radiation (2000–2017)",
+            output: "198 curated multi-spectral observation records covering 11 Andhra Pradesh districts across 18 cropping seasons",
+            bullets: [
+                "Synchronizes 16-day composite MODIS surface greenness with daily agro-meteorological records.",
+                "Covers 11 major groundnut producing districts across Rayalaseema and coastal Andhra Pradesh.",
+                "Aligns 18 continuous harvest cycles with verified government and ICRISAT yield records."
+            ],
+            metrics: [
+                { label: "Historical Span", val: "18 Continuous Years (2000–2017)" },
+                { label: "Districts Mapped", val: "11 Groundnut Districts" },
+                { label: "Observations", val: "198 Aggregated Records" },
+                { label: "Satellite Resolution", val: "250-meter MODIS Terra" }
+            ],
+            artifactsLabel: "Key Artifacts & Data Stores",
+            artifactsText: "data/raw/groundnut_dataset.csv, NASA POWER daily climate dumps, MODIS NDVI rasters.",
+            actionBtn: { text: "Inspect Raw Observation Database →", href: "/database" }
+        },
+        2: {
+            number: "02",
+            stageTag: "STAGE 02 OF 09 • QUALITY ASSURANCE",
+            title: "2. Data Preprocessing & Validation",
+            icon: "🧹",
+            simpleTitle: "Step 2: Cleaning Data & Removing Errors",
+            simpleSummary: "Raw weather sensors and satellites occasionally encounter clouds, sensor noise, or missing dates. We clean, normalize, and sanity-check every single record to ensure 100% data reliability.",
+            whyItMatters: "Clean data prevents false predictions. High quality in produces trustworthy estimates out.",
+            input: "198 raw multi-source district records containing missing sensor fields and temporal gaps",
+            process: "Execute seasonal forward/backward imputation, remove cloud-contaminated satellite pixels, and run IQR outlier filtering",
+            output: "Certified high-fidelity dataset with 0% missing fields and verified statistical distributions",
+            bullets: [
+                "Imputes micro-level weather gaps using regional spatial neighbor interpolation.",
+                "Normalizes multi-year drought anomalies against 20-year climatological baselines.",
+                "Verifies groundnut production values against Ministry of Agriculture gazettes."
+            ],
+            metrics: [
+                { label: "Missing Fields Remaining", val: "0% Complete" },
+                { label: "Outliers Filtered", val: "IQR Range Filtering" },
+                { label: "Data Quality Score", val: "100% Cleaned" },
+                { label: "Feature Balance", val: "Normalized [0, 1]" }
+            ],
+            artifactsLabel: "Key Artifacts & Cleansed Sets",
+            artifactsText: "data/processed/biomass_quick_lookup.json, cleaned regression matrices.",
+            actionBtn: { text: "View Historical Database →", href: "/historical" }
+        },
+        3: {
+            number: "03",
+            stageTag: "STAGE 03 OF 09 • FEATURE SCIENCE",
+            title: "3. Agronomic Feature Engineering",
+            icon: "🧬",
+            simpleTitle: "Step 3: Calculating Smart Crop Health Indices",
+            simpleSummary: "Raw numbers don't tell the whole story. We engineer specialized agronomic signals like leaf canopy density (NDVI), vegetative moisture index, and thermal heat stress during critical pod filling periods.",
+            whyItMatters: "Captures actual crop biological distress before human eyes or harvest scales can detect it.",
+            input: "Cleaned surface reflectance bands (NIR, Red) and raw daily weather parameters",
+            process: "Formulate vegetation indices (NDVI, EVI), hydro-thermal stress ratios, and cumulative monsoon rainfall metrics",
+            output: "9 high-impact predictive features engineered for tree-based ensemble learning",
+            bullets: [
+                "Formulates Normalized Difference Vegetation Index (NDVI) to gauge chlorophyll density.",
+                "Computes hydro-thermal stress indicator combining summer peak temperatures with dry spell days.",
+                "Calculates root-zone moisture index to assess underground pod development health."
+            ],
+            metrics: [
+                { label: "Total Features", val: "9 Specialized Predictors" },
+                { label: "Key Index", val: "Mean NDVI (Vegetation)" },
+                { label: "Weather Predictors", val: "Rain, Temp_max, Humidity" },
+                { label: "Feature Importance", val: "Verified via Mutual Info" }
+            ],
+            artifactsLabel: "Key Artifacts & Feature Tables",
+            artifactsText: "feature_matrix.npy, correlation matrices, correlation heatmap visualizer.",
+            actionBtn: { text: "Explore TreeSHAP Features →", href: "/xai" }
+        },
+        4: {
+            number: "04",
+            stageTag: "STAGE 04 OF 09 • BENCHMARKING",
+            title: "4. Baseline Model Training",
+            icon: "📊",
+            simpleTitle: "Step 4: Training Benchmark Reference Models",
+            simpleSummary: "To know if our AI is truly superior, we train classic baseline models first (like Linear Regression and Decision Trees) to establish a rigorous scientific performance baseline.",
+            whyItMatters: "Provides objective scientific proof that our advanced ensemble genuinely outperforms simpler methods.",
+            input: "Engineered feature matrix split into 80% training / 20% holdout validation partitions",
+            process: "Train Ordinary Least Squares, Ridge, Lasso, and single Decision Tree regressors across 10 cross-validation folds",
+            output: "Baseline error metric benchmark: Linear Regression achieves MAE of 52.3 kg/ha and R² of 0.612",
+            bullets: [
+                "Establishes lower-bound benchmark for error comparison across all subsequent models.",
+                "Proves linear models fail to capture non-linear drought and crop disease interactions.",
+                "Logs root-mean-square error (RMSE) and mean absolute error (MAE) for baseline tracking."
+            ],
+            metrics: [
+                { label: "Baseline MAE", val: "52.34 kg/ha" },
+                { label: "Baseline R²", val: "0.612 (Linear Regression)" },
+                { label: "CV Folds", val: "10-Fold Stratified" },
+                { label: "Underfitting Check", val: "High Bias Identified" }
+            ],
+            artifactsLabel: "Key Artifacts & Logs",
+            artifactsText: "baseline_regression_logs.txt, residual error scatter plots.",
+            actionBtn: { text: "View Model Leaderboard →", href: "/comparison" }
+        },
+        5: {
+            number: "05",
+            stageTag: "STAGE 05 OF 09 • LEADERBOARD",
+            title: "5. Multi-Model Tournament & Comparison",
+            icon: "⚖️",
+            simpleTitle: "Step 5: Testing 7 Algorithms to Find the Champions",
+            simpleSummary: "We pit 7 distinct machine learning algorithms against each other on the exact same unseen harvest test data: Random Forest, Extra Trees, Gradient Boosting, XGBoost, and Support Vector Machines.",
+            whyItMatters: "Ensures we don't pick a model based on guesswork. The winning algorithm is chosen purely through transparent data evidence.",
+            input: "10-fold cross-validation datasets and hyperparameter search grids",
+            process: "Execute GridSearchCV optimization across Random Forest, Extra Trees, XGBoost, CatBoost, and Ridge",
+            output: "Model leaderboard identifying Extra Trees (MAE: 32.1 kg/ha), Random Forest, and XGBoost as top 3 candidates",
+            bullets: [
+                "Tree ensembles reduce prediction errors by over 38% compared to single linear equations.",
+                "Extra Trees Regressor achieves lowest variance and best stability across all districts.",
+                "Ranks candidates systematically using Mean Absolute Error (MAE) and R² accuracy."
+            ],
+            metrics: [
+                { label: "Models Evaluated", val: "7 Regressor Families" },
+                { label: "Top Single Model", val: "Extra Trees (MAE: 32.1 kg/ha)" },
+                { label: "Error Reduction", val: "-38.2% vs Baselines" },
+                { label: "Leaderboard Winner", val: "Ensemble Trees" }
+            ],
+            artifactsLabel: "Key Artifacts & Comparison Charts",
+            artifactsText: "outputs/model_comparison_metrics.png, cross-validation boxplots, error distribution charts.",
+            actionBtn: { text: "Open Full Model Leaderboard →", href: "/comparison" }
+        },
+        6: {
+            number: "06",
+            stageTag: "STAGE 06 OF 09 • CHAMPION ARCHITECTURE",
+            title: "6. Improved Hybrid Ensemble (Champion Model)",
+            icon: "🏆",
+            simpleTitle: "Step 6: Combining Top 3 Models for Maximum Accuracy",
+            simpleSummary: "Instead of relying on a single AI model, we created a weighted 'Voting Ensemble' combining Extra Trees (60%), Random Forest (25%), and XGBoost (15%). Like a panel of expert agronomists, their combined vote beats any individual model.",
+            whyItMatters: "Achieves an outstanding 88.7% accuracy (R² = 0.887) and reduces average error down to just 28 kg/ha. This gives farmers and factories confidence in the numbers.",
+            input: "Optimal hyperparameters from GridSearchCV + Top 3 performing models",
+            process: "Construct soft-voting ensemble with calibrated weights (ExtraTrees: 0.60, Random Forest: 0.25, XGBoost: 0.15)",
+            output: "Champion production model serialized to hybrid_biomass_model.pkl for instant sub-second predictions",
+            bullets: [
+                "Combines low variance from Extra Trees with gradient error correction from XGBoost.",
+                "Achieves Champion R² of 0.887 and lowest Mean Absolute Error of 28.4 kg/ha.",
+                "Operates with sub-15ms inference latency for instantaneous web simulations."
+            ],
+            metrics: [
+                { label: "Champion R²", val: "0.887 (Holdout Test)" },
+                { label: "Ensemble MAE", val: "28.42 kg/ha" },
+                { label: "Weight Scheme", val: "ET: 60% | RF: 25% | XGB: 15%" },
+                { label: "Production File", val: "hybrid_biomass_model.pkl" }
+            ],
+            artifactsLabel: "Key Artifacts & Serialized Models",
+            artifactsText: "models/hybrid_biomass_model.pkl, training logs, hyperparameter configuration file.",
+            actionBtn: { text: "Run Scenario Simulator →", href: "/predict" }
+        },
+        7: {
+            number: "07",
+            stageTag: "STAGE 07 OF 09 • BYPRODUCT YIELD MAPPING",
+            title: "7. Shell Biomass Prediction & Conversions",
+            icon: "🔮",
+            simpleTitle: "Step 7: Converting Total Crop to Shell Waste Weight",
+            simpleSummary: "When groundnuts are harvested and shelled (decorticated), shells account for ~28.5% of the total pod mass. Our model accurately computes shell weight per hectare and multiplies it by farm acreage.",
+            whyItMatters: "Farmers and factories deal in tonnes of shells, not abstract pod indices. This step translates AI into actual kilograms and commercial tonnes.",
+            input: "Ensemble pod yield predictions + Harvested area (hectares or acres)",
+            process: "Apply ICRISAT-calibrated decortication shell-to-pod ratio (~0.285) and scale by harvested agricultural land parcel",
+            output: "Per-hectare shell density (kg/ha) and total available regional biomass (tonnes)",
+            bullets: [
+                "Calibrated against ICRISAT post-harvest decortication processing standards (~28.5%).",
+                "Provides dual scale: individual farmer parcel (acres) and full district aggregate (tonnes).",
+                "Updates in real-time as users change district, acreage, or weather outlooks."
+            ],
+            metrics: [
+                { label: "Shell Conversion Ratio", val: "28.5% of Pod Mass" },
+                { label: "Dual Units", val: "kg/ha & Metric Tonnes" },
+                { label: "State Availability", val: "~90,000 t / Season" },
+                { label: "Calculation Speed", val: "< 10 ms Instant" }
+            ],
+            artifactsLabel: "Key Artifacts & Lookup Tables",
+            artifactsText: "data/processed/biomass_quick_lookup.json, district aggregation tables.",
+            actionBtn: { text: "Predict Custom Land Parcel →", href: "/predict" }
+        },
+        8: {
+            number: "08",
+            stageTag: "STAGE 08 OF 09 • TRUST & TRANSPARENCY",
+            title: "8. TreeSHAP Explainability (XAI)",
+            icon: "🧠",
+            simpleTitle: "Step 8: Explaining WHY the AI Made Each Prediction",
+            simpleSummary: "AI should never be a mysterious 'black box'. We use game theory (TreeSHAP) to show exactly which factors boosted the yield (e.g. good monsoon rain, healthy green leaves) and which dragged it down (e.g. summer heatwaves).",
+            whyItMatters: "Gives farmers and agricultural officers transparent explanations they can trust and verify against their own field experience.",
+            input: "Champion Hybrid Model + 198 district-year agricultural observations",
+            process: "Compute Shapley Additive Explanations (TreeSHAP) values for all 9 satellite & climate predictor features",
+            output: "Attribution charts showing Mean NDVI (34.2%) and Soil Moisture (28.1%) are the primary positive drivers",
+            bullets: [
+                "Mathematically consistent game-theoretic feature attribution for every single prediction.",
+                "Reveals canopy greenness (NDVI) is the strongest catalyst (+34.2% attribution).",
+                "Identifies extreme temperature heat stress (>34°C) as the primary negative drag factor."
+            ],
+            metrics: [
+                { label: "Top Positive Driver", val: "Mean NDVI (+34.2%)" },
+                { label: "Key Moisture Factor", val: "Root Wetness (+28.1%)" },
+                { label: "Primary Drag Factor", val: "Summer Temp_max" },
+                { label: "Explainability Type", val: "TreeSHAP Local & Global" }
+            ],
+            artifactsLabel: "Key Artifacts & SHAP Reports",
+            artifactsText: "outputs/shap_detailed_analysis.csv, TreeSHAP summary beeswarm plots, individual force plot JSON.",
+            actionBtn: { text: "Explore TreeSHAP Insights →", href: "/xai" }
+        },
+        9: {
+            number: "09",
+            stageTag: "STAGE 09 OF 09 • CIRCULAR VALUE CHAIN",
+            title: "9. Biomass Availability & Industry Marketplace",
+            icon: "📈",
+            simpleTitle: "Step 9: Connecting Harvest Shells to 23 Industrial Buyers",
+            simpleSummary: "Prediction is only the first step. Our platform connects farmers with 23 certified regional factories (bioenergy plants, briquette makers, and biochar kilns). It automatically calculates road freight distance, transport costs, and net profit!",
+            whyItMatters: "Turns agricultural waste into real money in farmers' pockets while providing clean green fuel to industries to replace dirty coal.",
+            input: "Regional biomass availability + Factory GPS locations + Product purchase rates",
+            process: "Calculate transport distance, freight diesel cost, clean electricity MWh, and CO₂ emission displacement",
+            output: "Interactive buyer marketplace with distance-adjusted net profit analysis for all 23 plants",
+            bullets: [
+                "Calculates clean energy equivalent: 1 tonne = ~1.43 MWh of electricity (replacing coal).",
+                "Computes CO₂ reduction: 1 tonne of shell biomass offsets 1.17 tonnes of coal emissions.",
+                "Matches biomass with 23 registered industrial buyers with exact road freight calculations."
+            ],
+            metrics: [
+                { label: "Clean Electricity", val: "1.43 MWh / dry tonne" },
+                { label: "CO₂ Offset Ratio", val: "1.17 t CO₂ / tonne" },
+                { label: "Registered Buyers", val: "23 Regional Plants" },
+                { label: "Logistics Engine", val: "Distance-specific Freight" }
+            ],
+            artifactsLabel: "Key Artifacts & Buyer Database",
+            artifactsText: "SQLite database with 23 geocoded industrial factories, transport matrix, circular economy contracts.",
+            actionBtn: { text: "Explore 23 Buyers & Calculate Profit →", href: "/marketplace" }
+        }
+    };
+
+    const dockShelf = document.getElementById('dockShelf');
+    const dockItems = document.querySelectorAll('.dock-item');
+    const detailPanel = document.getElementById('dock-detail-panel');
+    const dockPrevBtn = document.getElementById('dockPrevBtn');
+    const dockNextBtn = document.getElementById('dockNextBtn');
+    const dockStepCounter = document.getElementById('dockStepCounter');
+    const dockStageCounterBadge = document.getElementById('dockStageCounterBadge');
+
+    let currentStep = 6;
+    let viewMode = 'simple';
+
+    function renderStepDetail(stepNum) {
+        const step = PIPELINE_DATA[stepNum];
+        if (!step || !detailPanel) return;
+
+        if (dockStepCounter) {
+            dockStepCounter.textContent = 'Stage ' + (stepNum < 10 ? '0' + stepNum : stepNum) + ' • ' + step.title.split('. ')[1];
+        }
+        if (dockStageCounterBadge) {
+            dockStageCounterBadge.textContent = 'Stage ' + (stepNum < 10 ? '0' + stepNum : stepNum) + ' of 09';
+        }
+
+        let actionBtnHtml = '';
+        if (step.actionBtn) {
+            actionBtnHtml = '<a href="' + step.actionBtn.href + '" class="btn btn-primary btn-sm">' + step.actionBtn.text + '</a>';
+        }
+
+        let metricsHtml = '';
+        step.metrics.forEach(function(m) {
+            metricsHtml += '<div style="background: var(--color-bg-subtle); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 10px 12px;">' +
+                '<div style="font-size: 10.5px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">' + m.label + '</div>' +
+                '<div style="font-size: 13.5px; font-weight: 800; color: var(--color-green-primary); margin-top: 2px;">' + m.val + '</div>' +
+                '</div>';
+        });
+
+        let bulletsHtml = '';
+        step.bullets.forEach(function(b) {
+            bulletsHtml += '<li style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 13px; color: var(--color-text); line-height: 1.5;">' +
+                '<span style="color: var(--color-green-accent); font-weight: 800;">&check;</span>' +
+                '<span>' + b + '</span>' +
+                '</li>';
+        });
+
+        const toggleHtml = 
+            '<div style="display: inline-flex; background: var(--color-bg-subtle); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 3px; gap: 4px;">' +
+                '<button type="button" id="toggleSimpleView" class="btn btn-sm ' + (viewMode === 'simple' ? 'btn-primary' : 'btn-secondary') + '" style="border: none; padding: 4px 10px; font-size: 11.5px;">Plain English</button>' +
+                '<button type="button" id="toggleTechView" class="btn btn-sm ' + (viewMode === 'tech' ? 'btn-primary' : 'btn-secondary') + '" style="border: none; padding: 4px 10px; font-size: 11.5px;">Technical Specs</button>' +
+            '</div>';
+
+        let bodyHtml = '';
+        if (viewMode === 'simple') {
+            bodyHtml = 
+                '<div style="background: var(--color-green-light); border: 1px solid var(--color-green-border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 16px;">' +
+                    '<div style="font-size: 11px; font-weight: 800; color: var(--color-green-accent); text-transform: uppercase; margin-bottom: 4px;">Agronomic Context</div>' +
+                    '<div style="font-size: 14.5px; font-weight: 700; color: var(--color-green-primary); margin-bottom: 6px;">' + step.simpleTitle + '</div>' +
+                    '<p style="font-size: 13.5px; color: var(--color-text); line-height: 1.6; margin: 0 0 10px 0;">' + step.simpleSummary + '</p>' +
+                    '<div style="font-size: 12.5px; color: var(--color-text-muted); border-top: 1px dashed var(--color-green-border); padding-top: 8px;">' +
+                        '<strong>Why this step matters:</strong> ' + step.whyItMatters +
+                    '</div>' +
+                '</div>' +
+                '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">' +
+                    '<div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 16px;">' +
+                        '<div style="font-size: 11px; font-weight: 800; color: var(--color-green-primary); text-transform: uppercase; margin-bottom: 10px;">Process Highlights</div>' +
+                        '<ul style="list-style: none; padding: 0; margin: 0;">' + bulletsHtml + '</ul>' +
+                    '</div>' +
+                    '<div style="display: flex; flex-direction: column; gap: 10px;">' +
+                        '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">' + metricsHtml + '</div>' +
+                        (step.actionBtn ? '<div style="margin-top: auto; padding-top: 4px;">' + actionBtnHtml + '</div>' : '') +
+                    '</div>' +
+                '</div>';
+        } else {
+            bodyHtml = 
+                '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 16px;">' +
+                    '<div style="background: var(--color-bg-subtle); border-radius: var(--radius); padding: 14px;">' +
+                        '<div style="font-size: 10.5px; font-weight: 800; color: var(--color-brown); text-transform: uppercase;">Input Spec</div>' +
+                        '<div style="font-size: 12.5px; color: var(--color-text); margin-top: 4px; font-weight: 600;">' + step.input + '</div>' +
+                    '</div>' +
+                    '<div style="background: var(--color-bg-subtle); border-radius: var(--radius); padding: 14px;">' +
+                        '<div style="font-size: 10.5px; font-weight: 800; color: var(--color-green-accent); text-transform: uppercase;">Algorithm Execution</div>' +
+                        '<div style="font-size: 12.5px; color: var(--color-text); margin-top: 4px; font-weight: 600;">' + step.process + '</div>' +
+                    '</div>' +
+                    '<div style="background: var(--color-green-light); border-radius: var(--radius); padding: 14px;">' +
+                        '<div style="font-size: 10.5px; font-weight: 800; color: var(--color-green-primary); text-transform: uppercase;">Output Artifact</div>' +
+                        '<div style="font-size: 12.5px; color: var(--color-green-primary); margin-top: 4px; font-weight: 700;">' + step.output + '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">' +
+                    '<div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 16px;">' +
+                        '<div style="font-size: 11px; font-weight: 800; color: var(--color-green-primary); text-transform: uppercase; margin-bottom: 10px;">Validation &amp; Specifications</div>' +
+                        '<ul style="list-style: none; padding: 0; margin: 0;">' + bulletsHtml + '</ul>' +
+                    '</div>' +
+                    '<div style="display: flex; flex-direction: column; gap: 10px;">' +
+                        '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">' + metricsHtml + '</div>' +
+                        (step.actionBtn ? '<div style="margin-top: auto; padding-top: 4px;">' + actionBtnHtml + '</div>' : '') +
+                    '</div>' +
+                '</div>';
+        }
+
+        detailPanel.innerHTML = 
+            '<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--color-border-subtle);">' +
+                '<div>' +
+                    '<div class="badge badge-success" style="margin-bottom: 6px;">' + step.stageTag + '</div>' +
+                    '<h3 style="font-size: var(--text-xl); font-weight: 800; color: var(--color-green-primary); margin: 0;">' + step.title + '</h3>' +
+                '</div>' +
+                '<div>' + toggleHtml + '</div>' +
+            '</div>' +
+            bodyHtml;
+
+        const simpleBtn = document.getElementById('toggleSimpleView');
+        const techBtn = document.getElementById('toggleTechView');
+        if (simpleBtn && techBtn) {
+            simpleBtn.addEventListener('click', function() {
+                viewMode = 'simple';
+                renderStepDetail(currentStep);
+            });
+            techBtn.addEventListener('click', function() {
+                viewMode = 'tech';
+                renderStepDetail(currentStep);
+            });
+        }
+    }
+
+    function setActiveStep(stepNum, shouldCenter = true) {
+        currentStep = stepNum;
+        dockItems.forEach(function(btn) {
+            const num = parseInt(btn.dataset.step, 10);
+            const isActive = num === stepNum;
+            btn.classList.toggle('active', isActive);
+            btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            if (isActive && shouldCenter) {
+                btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        });
+        renderStepDetail(stepNum);
+    }
+
+    if (dockPrevBtn) {
+        dockPrevBtn.addEventListener('click', function() {
+            const prev = currentStep > 1 ? currentStep - 1 : 9;
+            setActiveStep(prev);
+        });
+    }
+
+    if (dockNextBtn) {
+        dockNextBtn.addEventListener('click', function() {
+            const next = currentStep < 9 ? currentStep + 1 : 1;
+            setActiveStep(next);
+        });
+    }
+
+    // Mac-Dock Magnification physics only on hover-capable devices
+    const isTouchDevice = window.matchMedia('(hover: none)').matches;
+    if (dockShelf && !isTouchDevice) {
+        dockShelf.addEventListener('mousemove', function(e) {
+            const mouseX = e.clientX;
+            const radius = 130;
+            const maxScale = 1.30;
+            const maxLift = 14;
+
+            dockItems.forEach(function(item) {
+                const rect = item.getBoundingClientRect();
+                const itemCenterX = rect.left + rect.width / 2;
+                const distance = Math.abs(mouseX - itemCenterX);
+
+                if (distance < radius) {
+                    const norm = Math.cos((distance / radius) * (Math.PI / 2));
+                    const scale = 1.0 + (maxScale - 1.0) * Math.pow(norm, 1.4);
+                    const lift = maxLift * Math.pow(norm, 1.4);
+                    item.style.transform = 'translateY(-' + lift.toFixed(1) + 'px) scale(' + scale.toFixed(3) + ')';
+                    item.style.zIndex = String(Math.round(10 + norm * 20));
+                } else {
+                    item.style.transform = 'translateY(0px) scale(1.0)';
+                    item.style.zIndex = '1';
+                }
+            });
+        });
+
+        dockShelf.addEventListener('mouseleave', function() {
+            dockItems.forEach(function(item) {
+                item.style.transform = 'translateY(0px) scale(1.0)';
+                item.style.zIndex = '1';
+            });
+        });
+    }
+
+    dockItems.forEach(function(item) {
+        const stepNum = parseInt(item.dataset.step, 10);
+        item.addEventListener('click', function() {
+            setActiveStep(stepNum);
+        });
+        item.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setActiveStep(stepNum);
+            }
+        });
+    });
+
+    setActiveStep(6, false);
+})();
+</script>
+{% endblock %}

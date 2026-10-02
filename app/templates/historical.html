@@ -1,0 +1,518 @@
+{% extends "base.html" %}
+{% block title %}Historical District Records & Custom Year Search — Groundnut Biomass AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hist-query-form {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr 1fr auto;
+        gap: var(--space-4);
+        align-items: flex-end;
+    }
+    .hist-filter-grid {
+        display: grid;
+        grid-template-columns: 1.8fr 1.2fr 1fr 1.2fr auto;
+        gap: var(--space-3);
+        align-items: flex-end;
+        margin-bottom: var(--space-4);
+    }
+    @media (max-width: 992px) {
+        .hist-query-form {
+            grid-template-columns: 1fr 1fr;
+        }
+        .hist-filter-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+    @media (max-width: 640px) {
+        .hist-query-form {
+            grid-template-columns: 1fr;
+        }
+        .hist-filter-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    .year-chip {
+        padding: 4px 11px;
+        font-size: 11px;
+        font-weight: 700;
+        font-family: var(--font-mono);
+        border-radius: var(--radius-pill);
+        border: 1px solid var(--color-border);
+        background: var(--color-surface);
+        color: var(--color-text-muted);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+    .year-chip:hover {
+        background: var(--color-green-light);
+        color: var(--color-green-primary);
+        border-color: var(--color-green-accent);
+    }
+    .year-chip-archive {
+        border-color: var(--color-green-border);
+        color: var(--color-green-primary);
+        background: var(--color-surface-muted);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <!-- Breadcrumb & Page Header -->
+    <div style="margin-bottom: var(--space-6);">
+        <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--color-green-accent); background: var(--color-green-light); padding: 4px 12px; border-radius: var(--radius-pill); text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid var(--color-green-border); margin-bottom: var(--space-2);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            Flexible Historical &amp; Climatological Search
+        </div>
+        <h1 style="font-family: var(--font-display); font-size: clamp(1.6rem, 2.8vw, 2.2rem); font-weight: 800; color: var(--color-green-primary); letter-spacing: -0.02em; margin-bottom: var(--space-1);">
+            Historical District Records &amp; Custom Year Search Explorer
+        </h1>
+        <p style="color: var(--color-text-muted); font-size: var(--text-sm); max-width: 780px; line-height: var(--leading-relaxed);">
+            Search <strong>any harvest season</strong> without fixed restrictions. Inspect verified historical ground truth (2000&ndash;2017) or run AI climatological simulations for past and upcoming production cycles.
+        </p>
+    </div>
+
+    <!-- 1. Manual Search Bar & Year Input Form -->
+    <div class="card" style="margin-bottom: var(--space-8);">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <h3 style="font-size: var(--text-lg); font-weight: 800; color: var(--color-green-primary); display: flex; align-items: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    </svg>
+                    Query Any Harvest Season (Unrestricted Year Range)
+                </h3>
+                <p style="font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px;">
+                    Type any custom year (e.g. 2026, 2025, 2024, 2015, 1998) or select from archived records
+                </p>
+            </div>
+            <span class="badge badge-info" style="font-family: var(--font-mono);">Open Range: 1950&ndash;2100</span>
+        </div>
+
+        <form method="POST" action="/historical" class="hist-query-form">
+            <div>
+                <label style="display: block; font-size: var(--text-xs); font-weight: 700; color: var(--color-green-primary); margin-bottom: var(--space-1); text-transform: uppercase; letter-spacing: 0.5px;">
+                    Select District
+                </label>
+                <select name="district" id="formDistrict" required class="form-input" style="width: 100%;">
+                    {% for dist in districts %}
+                        <option value="{{ dist }}" {% if dist == selected_district %}selected{% endif %}>
+                            {{ dist }} (Andhra Pradesh)
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label style="display: block; font-size: var(--text-xs); font-weight: 700; color: var(--color-green-primary); margin-bottom: var(--space-1); text-transform: uppercase; letter-spacing: 0.5px;">
+                    Harvest Year
+                </label>
+                <input type="number" name="year" id="formYear" value="{{ selected_year }}" min="1950" max="2100" placeholder="e.g. 2026, 2015" required class="form-input" style="width: 100%; font-family: var(--font-mono); font-weight: 700;">
+            </div>
+
+            <div>
+                <label style="display: block; font-size: var(--text-xs); font-weight: 700; color: var(--color-green-primary); margin-bottom: var(--space-1); text-transform: uppercase; letter-spacing: 0.5px;">
+                    Predictive Model
+                </label>
+                <select name="model" required class="form-input" style="width: 100%;">
+                    {% for key, label in models %}
+                        <option value="{{ key }}" {% if key == selected_model %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary" style="padding: 11px 24px; font-size: var(--text-sm); gap: 6px; width: 100%;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    Evaluate Season
+                </button>
+            </div>
+        </form>
+
+        <!-- Quick Year Shortcut Pills -->
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px solid var(--color-border-subtle); font-size: var(--text-xs);">
+            <span style="font-weight: 700; color: var(--color-text-subtle); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;">Quick Shortcuts:</span>
+            <button type="button" class="year-chip" onclick="setYear(2026)">2026 (Future)</button>
+            <button type="button" class="year-chip" onclick="setYear(2025)">2025 (Future)</button>
+            <button type="button" class="year-chip" onclick="setYear(2024)">2024 (Recent)</button>
+            <button type="button" class="year-chip" onclick="setYear(2020)">2020 (Recent)</button>
+            <button type="button" class="year-chip year-chip-archive" onclick="setYear(2017)">2017 (Archive)</button>
+            <button type="button" class="year-chip year-chip-archive" onclick="setYear(2015)">2015 (Archive)</button>
+            <button type="button" class="year-chip year-chip-archive" onclick="setYear(2010)">2010 (Archive)</button>
+            <button type="button" class="year-chip year-chip-archive" onclick="setYear(2005)">2005 (Archive)</button>
+            <button type="button" class="year-chip year-chip-archive" onclick="setYear(2000)">2000 (Archive)</button>
+            <button type="button" class="year-chip" onclick="setYear(1998)">1998 (Past)</button>
+            <button type="button" class="year-chip" onclick="setYear(1995)">1995 (Past)</button>
+        </div>
+    </div>
+
+    <!-- 2. Inspected Record Detail Panel -->
+    {% if prediction is not none %}
+    <div class="card" id="detailCard" style="border-left: 5px solid {% if is_archived_record %}var(--color-green-accent){% else %}var(--color-gold){% endif %}; margin-bottom: var(--space-8);">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <h3 style="font-size: var(--text-lg); font-weight: 800; color: var(--color-green-primary);">
+                    {% if is_archived_record %}
+                        Inspected Archive Record: {{ selected_district }} ({{ selected_year }})
+                    {% else %}
+                        Climatological Simulation: {{ selected_district }} (Year {{ selected_year }})
+                    {% endif %}
+                </h3>
+                <p style="font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px;">
+                    {% if is_archived_record %}
+                        Benchmark against verified ICRISAT ground truth recorded for this harvest season
+                    {% else %}
+                        Unarchived year evaluated using multi-year regional agro-meteorological climatology and secular trend
+                    {% endif %}
+                </p>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <span class="badge badge-info" style="font-family: var(--font-mono);">Model: {{ selected_model|upper }}</span>
+                {% if is_archived_record %}
+                    <span class="badge badge-success" style="gap: 4px;">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Verified Ground Truth
+                    </span>
+                {% else %}
+                    <span class="badge badge-warning" style="gap: 4px;">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        Custom Year Simulation
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Top Metric Comparison Hero -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-5); margin-bottom: var(--space-5);">
+            <!-- AI Prediction -->
+            <div style="background: var(--color-green-light); border: 1.5px solid var(--color-green-border); border-radius: var(--radius); padding: var(--space-5); text-align: center;">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-green-primary); letter-spacing: 0.5px;">
+                    AI Predicted Shell Biomass
+                </div>
+                <div style="font-size: 38px; font-weight: 800; color: var(--color-green-primary); margin: 6px 0; font-family: var(--font-mono); letter-spacing: -0.03em;">
+                    {{ "%.2f"|format(prediction) }} <span style="font-size: 18px; font-weight: 500;">kg/ha</span>
+                </div>
+                <div style="font-size: var(--text-xs); color: var(--color-green-accent); font-family: var(--font-mono);">
+                    &asymp; {{ "%.2f"|format(prediction * 0.404686) }} kg/acre
+                </div>
+            </div>
+
+            <!-- Ground Truth Target (Archived vs Unarchived) -->
+            <div style="background: var(--color-surface-muted); border: 1.5px solid var(--color-border); border-radius: var(--radius); padding: var(--space-5); text-align: center;">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted); letter-spacing: 0.5px;">
+                    {% if is_archived_record %}
+                        Actual Ground Truth (ICRISAT Target)
+                    {% else %}
+                        Historical Survey Status
+                    {% endif %}
+                </div>
+
+                {% if is_archived_record and actual_shell_biomass is not none %}
+                    <div style="font-size: 38px; font-weight: 800; color: var(--color-text); margin: 6px 0; font-family: var(--font-mono); letter-spacing: -0.03em;">
+                        {{ "%.2f"|format(actual_shell_biomass) }} <span style="font-size: 18px; font-weight: 500; color: var(--color-text-muted);">kg/ha</span>
+                    </div>
+                    <div style="font-size: var(--text-xs);">
+                        {% set diff = prediction - actual_shell_biomass %}
+                        {% set abs_diff = diff|abs %}
+                        {% set pct_err = (abs_diff / actual_shell_biomass) * 100 if actual_shell_biomass > 0 else 0 %}
+                        <span class="badge {% if pct_err < 15 %}badge-success{% elif pct_err < 25 %}badge-info{% else %}badge-warning{% endif %}" style="font-family: var(--font-mono);">
+                            Variance: {{ "%+.1f"|format(diff) }} kg/ha ({{ "%.1f"|format(pct_err) }}% error)
+                        </span>
+                    </div>
+                {% else %}
+                    <div style="font-size: 20px; font-weight: 800; color: var(--color-green-primary); margin: 14px 0 6px;">
+                        Unarchived Season
+                    </div>
+                    <div style="font-size: var(--text-xs); color: var(--color-text-muted); line-height: var(--leading-normal); max-width: 320px; margin: 0 auto;">
+                        Year <strong>{{ selected_year }}</strong> is outside the 2000&ndash;2017 ICRISAT ground survey partition. Forecast derived via secular climatological models.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Utilization & Environmental Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-5);">
+            <!-- Downstream Clean Bioenergy Potential -->
+            {% if util_data %}
+            <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: var(--space-5);">
+                <div style="font-size: var(--text-xs); font-weight: 700; color: var(--color-green-primary); text-transform: uppercase; margin-bottom: var(--space-3); display: flex; justify-content: space-between; align-items: center; letter-spacing: 0.5px;">
+                    <span>Estimated District Utilization ({{ selected_year }})</span>
+                    <span style="color: var(--color-green-accent); font-weight: 800; font-family: var(--font-mono);">&#8377;{{ "{:,.0f}".format(util_data.total_biomass_tonnes * 3000) }} Value</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+                    <div style="background: var(--color-surface-muted); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--color-border-subtle);">
+                        <div style="font-size: 10px; color: var(--color-text-subtle); text-transform: uppercase; font-weight: 700;">Total Biomass</div>
+                        <div style="font-size: 18px; font-weight: 800; color: var(--color-green-primary); font-family: var(--font-mono);">{{ "{:,.1f}".format(util_data.total_biomass_tonnes) }} t</div>
+                    </div>
+                    <div style="background: var(--color-surface-muted); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--color-border-subtle);">
+                        <div style="font-size: 10px; color: var(--color-text-subtle); text-transform: uppercase; font-weight: 700;">Clean Power</div>
+                        <div style="font-size: 18px; font-weight: 800; color: var(--color-green-accent); font-family: var(--font-mono);">{{ "{:,.1f}".format(util_data.electricity_mwh) }} MWh</div>
+                    </div>
+                    <div style="background: var(--color-surface-muted); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--color-border-subtle);">
+                        <div style="font-size: 10px; color: var(--color-text-subtle); text-transform: uppercase; font-weight: 700;">Solid Briquettes</div>
+                        <div style="font-size: 18px; font-weight: 800; color: var(--color-brown); font-family: var(--font-mono);">{{ "{:,.1f}".format(util_data.briquettes_tonnes) }} t</div>
+                    </div>
+                    <div style="background: var(--color-surface-muted); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--color-border-subtle);">
+                        <div style="font-size: 10px; color: var(--color-text-subtle); text-transform: uppercase; font-weight: 700;">CO₂ Avoided</div>
+                        <div style="font-size: 18px; font-weight: 800; color: var(--color-green-accent); font-family: var(--font-mono);">{{ "{:,.1f}".format(util_data.co2_avoided_tonnes) }} t</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recorded / Simulated Inputs Table -->
+            <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: var(--space-5);">
+                <div style="font-size: var(--text-xs); font-weight: 700; color: var(--color-green-primary); text-transform: uppercase; margin-bottom: var(--space-3); display: flex; justify-content: space-between; align-items: center; letter-spacing: 0.5px;">
+                    <span>Environmental Indicators</span>
+                    <span class="badge {% if is_archived_record %}badge-info{% else %}badge-warning{% endif %}" style="font-size: 10px;">
+                        {% if is_archived_record %}Sensor Archive{% else %}Climatological Model{% endif %}
+                    </span>
+                </div>
+                <table class="modern-table" style="font-size: 12px;">
+                    {% for name, val in row_features.items() %}
+                        <tr>
+                            <td style="padding: 6px 10px; color: var(--color-text-muted); font-size: 12px;">{{ name }}</td>
+                            <td style="padding: 6px 10px; text-align: right; font-weight: 700; color: var(--color-green-primary); font-family: var(--font-mono); font-size: 12px;">
+                                {{ val }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 3. Manual Live Keyword & Filter Table -->
+    <div class="card" style="margin-bottom: var(--space-8);">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <h3 style="font-size: var(--text-lg); font-weight: 800; color: var(--color-green-primary); display: flex; align-items: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                    Verified Archive Explorer (2000&ndash;2017 Dataset)
+                </h3>
+                <p style="font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px;">
+                    Live filter across all 198 district-year observations or click <strong>Inspect</strong> to load any row
+                </p>
+            </div>
+            <span id="filterCountBadge" class="badge badge-success" style="font-family: var(--font-mono);">Showing 198 of 198 Records</span>
+        </div>
+
+        <!-- Manual Filter Controls -->
+        <div class="hist-filter-grid">
+            <div>
+                <label style="display: block; font-size: 11px; font-weight: 700; color: var(--color-green-primary); margin-bottom: var(--space-1); text-transform: uppercase; letter-spacing: 0.5px;">
+                    Live Keyword Search
+                </label>
+                <input type="text" id="searchInput" placeholder="Type district, year..." oninput="filterHistoricalTable()" class="form-input" style="width: 100%;">
+            </div>
+
+            <div>
+                <label style="display: block; font-size: 11px; font-weight: 700; color: var(--color-green-primary); margin-bottom: var(--space-1); text-transform: uppercase; letter-spacing: 0.5px;">
+                    District Filter
+                </label>
+                <select id="districtFilter" onchange="filterHistoricalTable()" class="form-input" style="width: 100%;">
+                    <option value="ALL">All 11 Districts</option>
+                    {% for dist in districts %}
+                        <option value="{{ dist }}">{{ dist }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label style="display: block; font-size: 11px; font-weight: 700; color: var(--color-green-primary); margin-bottom: var(--space-1); text-transform: uppercase; letter-spacing: 0.5px;">
+                    Harvest Year
+                </label>
+                <select id="yearFilter" onchange="filterHistoricalTable()" class="form-input" style="width: 100%;">
+                    <option value="ALL">All 18 Archive Years</option>
+                    {% for yr in years %}
+                        <option value="{{ yr }}">{{ yr }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label style="display: block; font-size: 11px; font-weight: 700; color: var(--color-green-primary); margin-bottom: var(--space-1); text-transform: uppercase; letter-spacing: 0.5px;">
+                    Biomass Yield
+                </label>
+                <select id="yieldFilter" onchange="filterHistoricalTable()" class="form-input" style="width: 100%;">
+                    <option value="ALL">All Biomass Yields</option>
+                    <option value="HIGH">High Yield (&gt; 200 kg/ha)</option>
+                    <option value="MEDIUM">Moderate Yield (100&ndash;200 kg/ha)</option>
+                    <option value="LOW">Low / Stressed Yield (&lt; 100 kg/ha)</option>
+                </select>
+            </div>
+
+            <div>
+                <button type="button" class="btn btn-secondary" onclick="resetFilters()" style="padding: 10px 16px; font-size: var(--text-xs); width: 100%; gap: 6px;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                        <path d="M3 3v5h5"/>
+                    </svg>
+                    Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- Table Container -->
+        <div style="max-height: 560px; overflow-y: auto; overflow-x: auto; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-surface);">
+            <table class="modern-table" id="recordsTable">
+                <thead style="position: sticky; top: 0; z-index: 10; background: var(--color-surface-muted);">
+                    <tr>
+                        <th style="text-align: left;">District</th>
+                        <th style="text-align: center;">Year</th>
+                        <th style="text-align: right;">Shell Biomass (kg/ha)</th>
+                        <th style="text-align: right;">Groundnut Area ('000 ha)</th>
+                        <th style="text-align: right;">Mean Temp (&deg;C)</th>
+                        <th style="text-align: right;">Precipitation (mm)</th>
+                        <th style="text-align: right;">Mean NDVI</th>
+                        <th style="text-align: right;">Soil Wetness</th>
+                        <th style="text-align: center; width: 100px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in historical_records %}
+                        <tr class="data-row" 
+                            data-district="{{ r.district }}" 
+                            data-year="{{ r.year }}" 
+                            data-biomass="{{ r.shell_biomass }}"
+                            style="{% if r.district == selected_district and r.year == selected_year %}background: var(--color-green-light); font-weight: 600;{% endif %}">
+                            
+                            <td style="font-weight: 700; color: var(--color-green-primary);">
+                                {{ r.district }}
+                            </td>
+                            <td style="text-align: center; color: var(--color-text-muted); font-family: var(--font-mono);">
+                                {{ r.year }}
+                            </td>
+                            <td style="text-align: right; font-family: var(--font-mono); font-weight: 800;">
+                                {% if r.shell_biomass >= 200 %}
+                                    <span style="color: var(--color-green-primary);">{{ r.shell_biomass }}</span>
+                                    <span class="badge badge-success" style="font-size: 9px; padding: 1px 6px; margin-left: 4px;">HIGH</span>
+                                {% elif r.shell_biomass >= 100 %}
+                                    <span style="color: var(--color-info);">{{ r.shell_biomass }}</span>
+                                    <span class="badge badge-info" style="font-size: 9px; padding: 1px 6px; margin-left: 4px;">MED</span>
+                                {% else %}
+                                    <span style="color: var(--color-danger);">{{ r.shell_biomass }}</span>
+                                    <span class="badge badge-danger" style="font-size: 9px; padding: 1px 6px; margin-left: 4px;">LOW</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right; color: var(--color-text-muted); font-family: var(--font-mono);">
+                                {{ r.area }}
+                            </td>
+                            <td style="text-align: right; color: var(--color-text-muted); font-family: var(--font-mono);">
+                                {{ r.temp }}&deg;C
+                            </td>
+                            <td style="text-align: right; color: var(--color-text-muted); font-family: var(--font-mono);">
+                                {{ r.rainfall }} mm
+                            </td>
+                            <td style="text-align: right; color: var(--color-text-muted); font-family: var(--font-mono);">
+                                {{ r.ndvi }}
+                            </td>
+                            <td style="text-align: right; color: var(--color-text-muted); font-family: var(--font-mono);">
+                                {{ r.soil_wetness }}
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="/historical?district={{ r.district }}&year={{ r.year }}&model={{ selected_model }}" 
+                                   class="btn btn-primary" 
+                                   style="padding: 5px 12px; font-size: 11px; text-decoration: none; border-radius: var(--radius-sm); gap: 4px;">
+                                    Inspect
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function setYear(yr) {
+    const inp = document.getElementById('formYear');
+    if (inp) {
+        inp.value = yr;
+        inp.style.borderColor = 'var(--color-green-accent)';
+        inp.style.background = 'var(--color-green-light)';
+        setTimeout(() => { 
+            inp.style.borderColor = ''; 
+            inp.style.background = '';
+        }, 350);
+    }
+}
+
+function filterHistoricalTable() {
+    const searchInput = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+    const districtFilter = document.getElementById('districtFilter').value;
+    const yearFilter = document.getElementById('yearFilter').value;
+    const yieldFilter = document.getElementById('yieldFilter').value;
+
+    const rows = document.querySelectorAll('#recordsTable tbody tr.data-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const district = row.getAttribute('data-district');
+        const year = row.getAttribute('data-year');
+        const biomass = parseFloat(row.getAttribute('data-biomass'));
+        const rowText = row.innerText.toLowerCase();
+
+        const matchesSearch = !searchInput || rowText.includes(searchInput);
+        const matchesDistrict = (districtFilter === 'ALL') || (district === districtFilter);
+        const matchesYear = (yearFilter === 'ALL') || (year === yearFilter);
+
+        let matchesYield = true;
+        if (yieldFilter === 'HIGH') {
+            matchesYield = biomass >= 200;
+        } else if (yieldFilter === 'MEDIUM') {
+            matchesYield = biomass >= 100 && biomass < 200;
+        } else if (yieldFilter === 'LOW') {
+            matchesYield = biomass < 100;
+        }
+
+        if (matchesSearch && matchesDistrict && matchesYear && matchesYield) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    const badge = document.getElementById('filterCountBadge');
+    if (badge) {
+        badge.innerText = `Showing ${visibleCount} of ${rows.length} Records`;
+        if (visibleCount === 0) {
+            badge.className = 'badge badge-danger';
+        } else {
+            badge.className = 'badge badge-success';
+        }
+    }
+}
+
+function resetFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('districtFilter').value = 'ALL';
+    document.getElementById('yearFilter').value = 'ALL';
+    document.getElementById('yieldFilter').value = 'ALL';
+    filterHistoricalTable();
+}
+</script>
+{% endblock %}

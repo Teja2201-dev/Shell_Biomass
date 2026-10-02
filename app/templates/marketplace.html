@@ -1,0 +1,605 @@
+{% extends "base.html" %}
+
+{% block title %}Industry & Factory Matcher — Groundnut Biomass AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .market-hero {
+        background: linear-gradient(135deg, var(--color-green-primary) 0%, #295730 55%, var(--color-green-accent) 100%);
+        border-radius: var(--radius-xl);
+        padding: var(--space-8);
+        color: var(--color-text-inverse);
+        margin-bottom: var(--space-6);
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        overflow: hidden;
+    }
+    .selected-deal-card {
+        background: var(--color-surface);
+        border: 2px solid var(--color-green-accent);
+        border-radius: var(--radius-xl);
+        padding: var(--space-6);
+        box-shadow: var(--shadow-lg);
+        margin-bottom: var(--space-8);
+        position: relative;
+    }
+    .deal-badge {
+        position: absolute;
+        top: -14px;
+        left: 24px;
+        background: var(--color-green-accent);
+        color: white;
+        font-size: 11px;
+        font-weight: 800;
+        padding: 5px 14px;
+        border-radius: var(--radius-pill);
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        box-shadow: 0 4px 12px rgba(46, 125, 50, 0.35);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .dual-profit-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-5);
+        margin: var(--space-5) 0;
+    }
+    @media (max-width: 860px) {
+        .dual-profit-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    .profit-side-box {
+        border-radius: var(--radius);
+        padding: var(--space-5);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .profit-side-farmer {
+        background: var(--color-green-light);
+        border: 1.5px solid var(--color-green-border);
+    }
+    .profit-side-industry {
+        background: var(--color-gold-light);
+        border: 1.5px solid var(--color-gold-border);
+    }
+    .factory-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+        gap: var(--space-5);
+        margin-top: var(--space-4);
+    }
+    @media (max-width: 640px) {
+        .market-hero {
+            padding: var(--space-5);
+        }
+        .selected-deal-card {
+            padding: var(--space-4);
+        }
+        .factory-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    .factory-card {
+        background: var(--color-surface);
+        border-radius: var(--radius);
+        border: 1.5px solid var(--color-border);
+        padding: var(--space-5);
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        cursor: pointer;
+        transition: all var(--transition-base);
+    }
+    .factory-card:hover {
+        transform: translateY(-3px);
+        border-color: var(--color-green-accent);
+        box-shadow: var(--shadow-md);
+    }
+    .factory-card.is-active {
+        border: 2.5px solid var(--color-green-accent);
+        background: #FAFDF9;
+        box-shadow: 0 8px 24px rgba(46, 125, 50, 0.2);
+    }
+    .factory-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+    .distance-tag {
+        font-size: 11.5px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: var(--radius-pill);
+        background: var(--color-surface-muted);
+        color: var(--color-green-primary);
+        border: 1px solid var(--color-border);
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+        font-family: var(--font-mono);
+    }
+    .balance-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: var(--text-xs);
+        padding: 5px 0;
+        border-bottom: 1px dashed var(--color-border-subtle);
+    }
+    .balance-row:last-child {
+        border-bottom: none;
+        padding-top: 8px;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <!-- Marketplace Hero Banner -->
+    <div class="market-hero">
+        <div style="font-size: 11px; font-weight: 700; color: #D1FAE5; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: var(--space-2); display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Interactive Circular Economy &amp; Logistics Pricing Engine
+        </div>
+        <h1 style="font-family: var(--font-display); font-size: clamp(1.6rem, 2.8vw, 2.2rem); font-weight: 800; margin-bottom: var(--space-2); letter-spacing: -0.02em; color: #FFFFFF;">
+            Company-Specific Distance, Transport &amp; Profit Calculator
+        </h1>
+        <p style="font-size: var(--text-sm); color: rgba(255, 255, 255, 0.9); max-width: 820px; line-height: var(--leading-relaxed);">
+            Every processing plant and industrial boiler has unique route mileage from your farm hub. Select any buyer below to dynamically calculate exact highway freight rates, the producer's net in-hand earnings, and the off-taker's fossil coal displacement savings.
+        </p>
+    </div>
+
+    <!-- Parameter Filter Bar -->
+    <div class="card" style="margin-bottom: var(--space-6);">
+        <form method="GET" action="/marketplace" id="marketFilterForm">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: var(--space-4); align-items: flex-end;">
+                <div>
+                    <label style="font-weight: 700; font-size: var(--text-xs); color: var(--color-green-primary); margin-bottom: var(--space-1); display: block; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Farm / Hub District (Origin)
+                    </label>
+                    <select name="district" class="form-input" onchange="document.getElementById('marketFilterForm').submit()" style="width: 100%;">
+                        {% for d in districts %}
+                            <option value="{{ d }}" {% if d == selected_district %}selected{% endif %}>{{ d }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label style="font-weight: 700; font-size: var(--text-xs); color: var(--color-green-primary); margin-bottom: var(--space-1); display: block; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Available Shell Biomass
+                    </label>
+                    <div style="position: relative;">
+                        <input type="number" step="5" min="1" max="100000" id="biomassInput" name="biomass_tonnes" value="{{ biomass_tonnes }}" class="form-input" style="width: 100%; padding-right: 64px; font-family: var(--font-mono); font-weight: 700;">
+                        <span style="position: absolute; right: 12px; top: 12px; font-size: 11px; font-weight: 700; color: var(--color-text-subtle);">Tonnes</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label style="font-weight: 700; font-size: var(--text-xs); color: var(--color-green-primary); margin-bottom: var(--space-1); display: block; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Target Off-Take Product
+                    </label>
+                    <select name="product" id="productSelect" class="form-input" onchange="document.getElementById('marketFilterForm').submit()" style="width: 100%;">
+                        <option value="all" {% if selected_product == 'all' %}selected{% endif %}>All Compatible Products</option>
+                        <option value="briquettes" {% if selected_product == 'briquettes' %}selected{% endif %}>Solid Biomass Briquettes</option>
+                        <option value="pellets" {% if selected_product == 'pellets' %}selected{% endif %}>Power Co-firing Pellets</option>
+                        <option value="raw_biomass" {% if selected_product == 'raw_biomass' %}selected{% endif %}>Raw Shredded Shells</option>
+                        <option value="biochar" {% if selected_product == 'biochar' %}selected{% endif %}>Biochar Soil Enricher</option>
+                    </select>
+                </div>
+
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-1);">
+                        <label style="font-weight: 700; font-size: var(--text-xs); color: var(--color-green-primary); text-transform: uppercase; letter-spacing: 0.5px;">
+                            Max Freight Radius
+                        </label>
+                        <span id="radiusLabel" style="font-family: var(--font-mono); font-weight: 800; color: var(--color-green-accent); font-size: var(--text-xs);">{{ max_radius|int }} km</span>
+                    </div>
+                    <input type="range" name="radius" min="20" max="400" step="10" value="{{ max_radius }}" oninput="document.getElementById('radiusLabel').innerText = this.value + ' km'" onchange="document.getElementById('marketFilterForm').submit()" style="width: 100%; accent-color: var(--color-green-accent); cursor: pointer; margin-top: 6px;">
+                </div>
+
+                <input type="hidden" name="factory_id" id="hiddenFactoryId" value="{{ selected_factory.factory_id if selected_factory else '' }}">
+
+                <div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 11px; font-size: var(--text-sm); gap: 6px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+                            <path d="M16 16h5v5"/>
+                        </svg>
+                        Refresh Matches
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- 1. DYNAMIC SELECTED COMPANY DEAL CALCULATOR (HIGHLIGHTED BOX) -->
+    {% if selected_factory %}
+    <div class="selected-deal-card" id="selectedDealSection">
+        <div class="deal-badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="4"/>
+            </svg>
+            Selected Deal &amp; Highway Transport Breakdown
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-3); padding-top: var(--space-2);">
+            <div>
+                <div style="font-size: 11px; font-weight: 700; color: var(--color-green-accent); text-transform: uppercase; letter-spacing: 0.5px;">
+                    {{ selected_factory.category }} &bull; {{ selected_factory.sub_category }}
+                </div>
+                <h2 id="dealCompanyName" style="font-family: var(--font-display); font-size: clamp(1.4rem, 2.2vw, 1.85rem); font-weight: 800; color: var(--color-green-primary); margin: 3px 0;">
+                    {{ selected_factory.name }}
+                </h2>
+                <div style="font-size: var(--text-xs); color: var(--color-text-muted); display: flex; gap: 14px; flex-wrap: wrap; margin-top: 6px; align-items: center;">
+                    <span>Location: <strong id="dealCompanyLoc" style="color: var(--color-text);">{{ selected_factory.location }}</strong></span>
+                    <span>&bull;</span>
+                    <span>Origin: <strong style="color: var(--color-text);">{{ selected_district }}</strong></span>
+                    <span class="distance-tag" id="dealCompanyDist">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="16" height="16" x="4" y="4" rx="2"/>
+                            <path d="M9 18v-6"/>
+                            <path d="M15 18v-3"/>
+                        </svg>
+                        Route Distance: {{ selected_factory.distance_km }} km
+                    </span>
+                </div>
+            </div>
+
+            <div style="text-align: right;">
+                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-subtle);">Target Fuel Spec</div>
+                <div id="dealProductBadge" style="font-size: var(--text-base); font-weight: 800; color: var(--color-green-primary); margin: 2px 0;">
+                    {{ selected_factory.product_offered }}
+                </div>
+                <div id="dealBuyingPrice" style="font-size: var(--text-sm); font-weight: 800; color: var(--color-green-accent); font-family: var(--font-mono);">
+                    Offered Rate: &#8377; {{ "{:,.0f}".format(selected_factory.buying_price_per_tonne_inr) }} / Tonne
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Company Selector Dropdown -->
+        <div style="background: var(--color-surface-muted); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 12px 18px; margin: var(--space-4) 0; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+            <span style="font-weight: 700; font-size: var(--text-xs); color: var(--color-green-primary); white-space: nowrap; text-transform: uppercase; letter-spacing: 0.5px;">
+                Switch Selected Buyer:
+            </span>
+            <select id="companyDropdown" onchange="selectCompanyById(this.value)" class="form-input" style="flex: 1; min-width: 260px; font-size: var(--text-sm); font-weight: 600;">
+                {% for f in match_results.matched_factories %}
+                    <option value="{{ f.factory_id }}" {% if f.factory_id == selected_factory.factory_id %}selected{% endif %}>
+                        {{ f.name }} ({{ f.distance_km }} km away) &mdash; Buying at &#8377; {{ "{:,.0f}".format(f.buying_price_per_tonne_inr) }}/T
+                    </option>
+                {% endfor %}
+            </select>
+            <span style="font-size: 11px; color: var(--color-text-subtle);">
+                (Distance dynamically updates freight deduction and net margin)
+            </span>
+        </div>
+
+        <!-- Dual Profit Grid: Farmer Profit vs Industry Savings -->
+        <div class="dual-profit-grid">
+            <!-- Left: Farmer / Producer Net Profit Box -->
+            <div class="profit-side-box profit-side-farmer">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span style="font-size: 11px; font-weight: 800; color: var(--color-green-primary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+                            Farmer / Producer Economics
+                        </span>
+                        <span class="badge badge-success" style="font-size: 10px;">Net Margin</span>
+                    </div>
+                    <div style="font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: 12px;">
+                        Residue sold to <strong id="farmerTargetName" style="color: var(--color-green-primary);">{{ selected_factory.name }}</strong>
+                    </div>
+
+                    <div class="balance-row">
+                        <span>Shell Biomass Converted</span>
+                        <span><strong id="farmerWasteQty" style="font-family: var(--font-mono);">{{ selected_factory.raw_wastage_tonnes if selected_factory.raw_wastage_tonnes else biomass_tonnes }} T</strong></span>
+                    </div>
+                    <div class="balance-row">
+                        <span>Product Supplied (<span id="farmerProdName">{{ selected_factory.product_offered }}</span>)</span>
+                        <span><strong id="farmerProdQty" style="font-family: var(--font-mono);">{{ selected_factory.product_quantity_tonnes }} T</strong></span>
+                    </div>
+                    <div class="balance-row">
+                        <span>Gross Sales Revenue (at &#8377; <span id="farmerRate">{{ "{:,.0f}".format(selected_factory.buying_price_per_tonne_inr) }}</span>/T)</span>
+                        <span style="font-family: var(--font-mono); font-weight: 700;">&#8377; <span id="farmerGross">{{ "{:,.0f}".format(selected_factory.gross_revenue_inr) }}</span></span>
+                    </div>
+                    <div class="balance-row" style="color: var(--color-danger);">
+                        <span>&minus; Conversion / Processing Cost</span>
+                        <span style="font-family: var(--font-mono);">&minus; &#8377; <span id="farmerMfg">{{ "{:,.0f}".format(selected_factory.processing_cost_inr) }}</span></span>
+                    </div>
+                    <div class="balance-row" style="color: var(--color-danger);">
+                        <span>&minus; Freight Transport (<strong id="farmerDistKm">{{ selected_factory.distance_km }} km</strong> corridor)</span>
+                        <span style="font-family: var(--font-mono);">&minus; &#8377; <span id="farmerFreight">{{ "{:,.0f}".format(selected_factory.transport_cost_inr) }}</span></span>
+                    </div>
+                </div>
+
+                <div style="background: var(--color-surface); border: 1.5px solid var(--color-green-accent); border-radius: var(--radius); padding: 14px; margin-top: var(--space-4); box-shadow: var(--shadow-sm);">
+                    <div style="font-size: 11px; font-weight: 800; color: var(--color-green-primary); text-transform: uppercase; letter-spacing: 0.5px;">
+                        Net Profit In-Hand to Producer
+                    </div>
+                    <div id="farmerNetProfit" style="font-size: 28px; font-weight: 800; color: var(--color-green-accent); line-height: 1.1; margin: 4px 0; font-family: var(--font-mono); letter-spacing: -0.03em;">
+                        + &#8377; {{ "{:,.0f}".format(selected_factory.producer_net_profit_inr) }}
+                    </div>
+                    <div style="font-size: 11.5px; color: var(--color-text-muted);">
+                        Net Realization: <strong id="farmerMarginPerTonne" style="color: var(--color-green-primary); font-family: var(--font-mono);">&#8377; {{ "{:,.0f}".format(selected_factory.producer_profit_per_tonne_waste) }}</strong> / Tonne of shell waste
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Buying Company Fuel Savings Box -->
+            <div class="profit-side-box profit-side-industry">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span style="font-size: 11px; font-weight: 800; color: var(--color-brown); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+                            Buying Industry Cost Savings &amp; ESG
+                        </span>
+                        <span class="badge badge-warning" style="font-size: 10px;">Coal Displaced</span>
+                    </div>
+                    <div style="font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: 12px;">
+                        Benefits for <strong id="industryTargetName" style="color: var(--color-brown);">{{ selected_factory.name }}</strong>
+                    </div>
+
+                    <div class="balance-row">
+                        <span>Baseline Fossil Fuel Displaced</span>
+                        <span><strong id="industryBaselineFuel">{{ selected_factory.baseline_fuel }}</strong></span>
+                    </div>
+                    <div class="balance-row">
+                        <span>Fossil Coal Bill Avoided</span>
+                        <span style="font-family: var(--font-mono);">&#8377; <span id="industryCoalAvoided">{{ "{:,.0f}".format(selected_factory.gross_revenue_inr + selected_factory.factory_fuel_savings_inr) }}</span></span>
+                    </div>
+                    <div class="balance-row">
+                        <span>Biomass Procurement Expense</span>
+                        <span style="font-family: var(--font-mono);">&minus; &#8377; <span id="industryBiomassCost">{{ "{:,.0f}".format(selected_factory.gross_revenue_inr) }}</span></span>
+                    </div>
+                    <div class="balance-row" style="color: var(--color-green-accent);">
+                        <span>+ Direct Thermal Fuel Bill Savings</span>
+                        <span style="font-family: var(--font-mono); font-weight: 700;">+ &#8377; <span id="industryDirectSavings">{{ "{:,.0f}".format(selected_factory.factory_fuel_savings_inr) }}</span></span>
+                    </div>
+                    <div class="balance-row" style="color: var(--color-brown);">
+                        <span>+ Carbon Credit &amp; ESG Offset Value</span>
+                        <span style="font-family: var(--font-mono);">+ &#8377; <span id="industryCarbonCredit">{{ "{:,.0f}".format(selected_factory.carbon_credit_benefit_inr) }}</span></span>
+                    </div>
+                </div>
+
+                <div style="background: var(--color-surface); border: 1.5px solid var(--color-gold-border); border-radius: var(--radius); padding: 14px; margin-top: var(--space-4); box-shadow: var(--shadow-sm);">
+                    <div style="font-size: 11px; font-weight: 800; color: var(--color-brown); text-transform: uppercase; letter-spacing: 0.5px;">
+                        Total Plant Net Economic Benefit
+                    </div>
+                    <div id="industryNetBenefit" style="font-size: 28px; font-weight: 800; color: var(--color-gold); line-height: 1.1; margin: 4px 0; font-family: var(--font-mono); letter-spacing: -0.03em;">
+                        + &#8377; {{ "{:,.0f}".format(selected_factory.factory_total_benefit_inr) }}
+                    </div>
+                    <div style="font-size: 11.5px; color: var(--color-text-muted);">
+                        Coal Savings: <strong id="industrySavingsPerTonne" style="color: var(--color-brown); font-family: var(--font-mono);">&#8377; {{ "{:,.0f}".format(selected_factory.factory_savings_per_tonne) }}</strong> / Tonne fuel fired &bull; <strong>{{ selected_factory.co2_avoided_tonnes }} T CO₂</strong> avoided
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logistics Route Explanation -->
+        <div style="background: var(--color-surface-muted); border-radius: var(--radius); border: 1px solid var(--color-border); padding: 12px 18px; font-size: var(--text-xs); color: var(--color-text-muted); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                    <path d="M10 17h4V5H2v12h3"/>
+                    <path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5v8h1"/>
+                    <circle cx="7.5" cy="17.5" r="2.5"/>
+                    <circle cx="17.5" cy="17.5" r="2.5"/>
+                </svg>
+                <span>
+                    <strong>Logistics Corridor:</strong> Farm Hub in <strong>{{ selected_district }}</strong> &rarr; <span id="dealRouteDest">{{ selected_factory.name }}</span> (<span id="dealRouteDist">{{ selected_factory.distance_km }}</span> km via highway corridor). Freight computed at base &#8377; 250 + &#8377; 4.50/t-km.
+                </span>
+            </div>
+            <button onclick="alert('Procurement Term Sheet generated for:\n\nBuyer: {{ selected_factory.name }}\nRoute: {{ selected_district }} -> {{ selected_factory.location }} ({{ selected_factory.distance_km }} km)\nQuantity: {{ selected_factory.product_quantity_tonnes }} Tonnes\nRate: Rs {{ selected_factory.buying_price_per_tonne_inr }}/Tonne\nNet Farmer In-Hand: Rs {{ selected_factory.producer_net_profit_inr }}\nFactory Fuel Savings: Rs {{ selected_factory.factory_total_benefit_inr }}\n\nTerm Sheet dispatched successfully!')" class="btn btn-primary" style="padding: 7px 16px; font-size: var(--text-xs); border-radius: var(--radius-sm); gap: 6px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Confirm Term Sheet with {{ selected_factory.name.split(' ')[0] }}
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 2. ALL MATCHED COMPANIES DIRECTORY (CLICK TO SELECT ANY COMPANY) -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4); flex-wrap: wrap; gap: 8px;">
+        <div>
+            <h2 style="font-family: var(--font-display); font-size: clamp(1.3rem, 2vw, 1.6rem); font-weight: 800; color: var(--color-green-primary);">
+                Available Factory Off-Takers ({{ match_results.total_matched }} Nearby)
+            </h2>
+            <p style="font-size: var(--text-xs); color: var(--color-text-muted);">
+                Click on any factory card below to calculate route-specific highway freight rates, net margin, and coal avoidance for that destination.
+            </p>
+        </div>
+        <div style="font-size: var(--text-xs); color: var(--color-text-muted); background: var(--color-surface); padding: 4px 12px; border-radius: var(--radius-pill); border: 1px solid var(--color-border);">
+            Sorted by shortest distance from <strong>{{ selected_district }}</strong>
+        </div>
+    </div>
+
+    {% if match_results.matched_factories %}
+    <div class="factory-grid">
+        {% for fac in match_results.matched_factories %}
+        <div class="factory-card {% if selected_factory and fac.factory_id == selected_factory.factory_id %}is-active{% endif %}" id="card-{{ fac.factory_id }}" onclick="selectCompanyById('{{ fac.factory_id }}')">
+            <div>
+                <div class="factory-header">
+                    <div>
+                        <span class="badge badge-success" style="font-size: 10px; margin-bottom: 4px;">
+                            {{ fac.category }}
+                        </span>
+                        <h3 style="font-size: var(--text-base); font-weight: 800; color: var(--color-green-primary); margin-top: 4px; line-height: var(--leading-snug);">
+                            {{ fac.name }}
+                        </h3>
+                        <div style="font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 3px; display: flex; align-items: center; gap: 4px;">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                            {{ fac.location }}
+                        </div>
+                    </div>
+                    <div class="distance-tag">
+                        {{ fac.distance_km }} km
+                    </div>
+                </div>
+
+                <div style="background: var(--color-surface-muted); border-radius: var(--radius-sm); border: 1px solid var(--color-border-subtle); padding: 8px 12px; font-size: var(--text-xs); margin: 10px 0;">
+                    <div>Requested: <strong>{{ fac.product_offered }}</strong></div>
+                    <div style="color: var(--color-text-muted); margin-top: 3px;">
+                        Buying Rate: <strong style="color: var(--color-green-accent); font-family: var(--font-mono);">&#8377; {{ "{:,.0f}".format(fac.buying_price_per_tonne_inr) }} / Tonne</strong>
+                    </div>
+                </div>
+
+                <!-- Specific distance & profit metrics for this company -->
+                <div style="background: var(--color-surface-muted); border-radius: var(--radius-sm); padding: 10px 12px; font-size: var(--text-xs); margin-bottom: 12px; border: 1px solid var(--color-border-subtle);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <span style="color: var(--color-text-muted);">Freight ({{ fac.distance_km }} km):</span>
+                        <span style="color: var(--color-brown); font-weight: 700; font-family: var(--font-mono);">&#8377; {{ "{:,.0f}".format(fac.transport_cost_inr) }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <span style="color: var(--color-green-primary); font-weight: 600;">Farmer Net Profit:</span>
+                        <span style="color: var(--color-green-accent); font-weight: 800; font-family: var(--font-mono);">+ &#8377; {{ "{:,.0f}".format(fac.producer_net_profit_inr) }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--color-brown); font-weight: 600;">Factory Coal Savings:</span>
+                        <span style="color: var(--color-gold); font-weight: 800; font-family: var(--font-mono);">+ &#8377; {{ "{:,.0f}".format(fac.factory_total_benefit_inr) }}</span>
+                    </div>
+                </div>
+
+                <p style="font-size: 11.5px; color: var(--color-text-muted); line-height: var(--leading-normal); margin-bottom: 12px;">
+                    {{ fac.description }}
+                </p>
+            </div>
+
+            <div style="border-top: 1px solid var(--color-border); padding-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 11px; font-weight: 700; color: {% if selected_factory and fac.factory_id == selected_factory.factory_id %}var(--color-green-accent){% else %}var(--color-text-subtle){% endif %};">
+                    {% if selected_factory and fac.factory_id == selected_factory.factory_id %}
+                        &check; Currently Active Deal
+                    {% else %}
+                        Click to Inspect Route
+                    {% endif %}
+                </span>
+                <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px; border-radius: var(--radius-sm);">
+                    Select Route
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card" style="text-align: center; padding: 48px 24px;">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; background: var(--color-gold-light); color: var(--color-gold); margin-bottom: var(--space-3);">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+        </div>
+        <h3 style="color: var(--color-green-primary); margin-bottom: 6px;">No Factories Found Within {{ max_radius|int }} km</h3>
+        <p style="color: var(--color-text-muted); font-size: var(--text-sm); max-width: 480px; margin: 0 auto 18px;">
+            Increase the freight corridor radius or switch the origin hub to find active industrial off-takers.
+        </p>
+        <a href="/marketplace?district={{ selected_district }}&radius=350&biomass_tonnes={{ biomass_tonnes }}" class="btn btn-primary" style="display: inline-flex;">
+            Expand Radius to 350 km
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Embedded Factory JSON Database for Instant Client-Side Switching -->
+<script>
+const MATCHED_FACTORIES = {{ match_results.matched_factories | tojson }};
+const ORIGIN_DISTRICT = {{ selected_district | tojson }};
+
+function formatINR(val) {
+    return Math.round(val).toLocaleString('en-IN');
+}
+
+function selectCompanyById(factoryId) {
+    const fac = MATCHED_FACTORIES.find(f => f.factory_id === factoryId);
+    if (!fac) return;
+
+    // 1. Update active styling on cards
+    document.querySelectorAll('.factory-card').forEach(el => el.classList.remove('is-active'));
+    const activeCard = document.getElementById('card-' + factoryId);
+    if (activeCard) activeCard.classList.add('is-active');
+
+    // 2. Sync dropdown
+    const dd = document.getElementById('companyDropdown');
+    if (dd) dd.value = factoryId;
+
+    // 3. Update hidden input for form persistence
+    const hiddenInp = document.getElementById('hiddenFactoryId');
+    if (hiddenInp) hiddenInp.value = factoryId;
+
+    // 4. Update deal header
+    const dealName = document.getElementById('dealCompanyName');
+    if (dealName) dealName.innerText = fac.name;
+    const dealLoc = document.getElementById('dealCompanyLoc');
+    if (dealLoc) dealLoc.innerText = fac.location;
+    const dealDist = document.getElementById('dealCompanyDist');
+    if (dealDist) dealDist.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="16" x="4" y="4" rx="2"/><path d="M9 18v-6"/><path d="M15 18v-3"/></svg> Route Distance: ' + fac.distance_km + ' km';
+    const dealProd = document.getElementById('dealProductBadge');
+    if (dealProd) dealProd.innerText = fac.product_offered;
+    const dealPrice = document.getElementById('dealBuyingPrice');
+    if (dealPrice) dealPrice.innerText = 'Offered Rate: ₹ ' + formatINR(fac.buying_price_per_tonne_inr) + ' / Tonne';
+
+    // 5. Update Farmer Economics
+    const fTarget = document.getElementById('farmerTargetName');
+    if (fTarget) fTarget.innerText = fac.name;
+    const fProd = document.getElementById('farmerProdName');
+    if (fProd) fProd.innerText = fac.product_offered;
+    const fProdQty = document.getElementById('farmerProdQty');
+    if (fProdQty) fProdQty.innerText = fac.product_quantity_tonnes + ' T';
+    const fRate = document.getElementById('farmerRate');
+    if (fRate) fRate.innerText = formatINR(fac.buying_price_per_tonne_inr);
+    const fGross = document.getElementById('farmerGross');
+    if (fGross) fGross.innerText = formatINR(fac.gross_revenue_inr);
+    const fMfg = document.getElementById('farmerMfg');
+    if (fMfg) fMfg.innerText = formatINR(fac.processing_cost_inr);
+    const fDist = document.getElementById('farmerDistKm');
+    if (fDist) fDist.innerText = fac.distance_km + ' km';
+    const fFreight = document.getElementById('farmerFreight');
+    if (fFreight) fFreight.innerText = formatINR(fac.transport_cost_inr);
+    const fNet = document.getElementById('farmerNetProfit');
+    if (fNet) fNet.innerText = '+ ₹ ' + formatINR(fac.producer_net_profit_inr);
+    const fMargin = document.getElementById('farmerMarginPerTonne');
+    if (fMargin) fMargin.innerText = '₹ ' + formatINR(fac.producer_profit_per_tonne_waste);
+
+    // 6. Update Buying Industry Economics
+    const iTarget = document.getElementById('industryTargetName');
+    if (iTarget) iTarget.innerText = fac.name;
+    const iFuel = document.getElementById('industryBaselineFuel');
+    if (iFuel) iFuel.innerText = fac.baseline_fuel;
+    const iAvoided = document.getElementById('industryCoalAvoided');
+    if (iAvoided) iAvoided.innerText = formatINR(fac.gross_revenue_inr + fac.factory_fuel_savings_inr);
+    const iCost = document.getElementById('industryBiomassCost');
+    if (iCost) iCost.innerText = formatINR(fac.gross_revenue_inr);
+    const iDirect = document.getElementById('industryDirectSavings');
+    if (iDirect) iDirect.innerText = formatINR(fac.factory_fuel_savings_inr);
+    const iCarbon = document.getElementById('industryCarbonCredit');
+    if (iCarbon) iCarbon.innerText = formatINR(fac.carbon_credit_benefit_inr);
+    const iNet = document.getElementById('industryNetBenefit');
+    if (iNet) iNet.innerText = '+ ₹ ' + formatINR(fac.factory_total_benefit_inr);
+    const iSavings = document.getElementById('industrySavingsPerTonne');
+    if (iSavings) iSavings.innerText = '₹ ' + formatINR(fac.factory_savings_per_tonne);
+
+    // 7. Route summary
+    const rDest = document.getElementById('dealRouteDest');
+    if (rDest) rDest.innerText = fac.name;
+    const rDist = document.getElementById('dealRouteDist');
+    if (rDist) rDist.innerText = fac.distance_km;
+
+    // 8. Smooth scroll up to deal section if clicked
+    const dealSection = document.getElementById('selectedDealSection');
+    if (dealSection) {
+        dealSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,730 @@
+{% extends "base.html" %}
+{% block title %}Custom Farm Land Biomass Estimation & Forecaster - Groundnut Biomass AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Workspace Layout */
+    .predict-header {
+        margin-bottom: var(--space-6);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: var(--space-4);
+    }
+
+    .predict-header h1 {
+        font-family: var(--font-display);
+        font-size: clamp(1.8rem, 2.5vw, 2.4rem);
+        color: var(--color-green-primary);
+        margin: 4px 0;
+    }
+
+    /* Scenario Quick Presets Bar */
+    .scenario-pill-strip {
+        display: inline-flex;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        padding: 4px;
+        border-radius: var(--radius-sm);
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .scenario-pill {
+        border: none;
+        background: transparent;
+        padding: 6px 12px;
+        border-radius: var(--radius-xs);
+        font-size: var(--text-xs);
+        font-weight: 700;
+        cursor: pointer;
+        color: var(--color-text);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all var(--transition-fast);
+        min-height: 36px;
+    }
+
+    .scenario-pill:hover {
+        background: var(--color-green-light);
+        color: var(--color-green-primary);
+    }
+
+    .scenario-pill.active {
+        background: var(--color-green-accent);
+        color: #FFFFFF;
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Workspace 12-Column Layout */
+    .workspace-sidebar {
+        position: sticky;
+        top: calc(var(--navbar-height) + 16px);
+    }
+
+    /* Form Card */
+    .form-box {
+        background: var(--color-surface);
+        border: 1.5px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-6);
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Quick Area Chips */
+    .area-chip-strip {
+        display: flex;
+        gap: 6px;
+        margin-top: 6px;
+        flex-wrap: wrap;
+    }
+
+    .area-chip {
+        border: 1px solid var(--color-border);
+        background: var(--color-bg-subtle);
+        color: var(--color-text);
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        min-height: 32px;
+        transition: all var(--transition-fast);
+    }
+
+    .area-chip:hover, .area-chip.active {
+        background: var(--color-green-accent);
+        color: #FFFFFF;
+        border-color: var(--color-green-accent);
+    }
+
+    /* Forecast Executive KPI Hero Banner */
+    .forecast-kpi-banner {
+        background: linear-gradient(135deg, var(--color-green-primary) 0%, #295B30 60%, var(--color-green-accent) 100%);
+        border-radius: var(--radius-lg);
+        padding: var(--space-6);
+        color: #FFFFFF;
+        box-shadow: var(--shadow-md);
+        margin-bottom: var(--space-6);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .forecast-kpi-banner h2 {
+        font-family: var(--font-display);
+        color: #FFFFFF;
+        font-size: var(--text-2xl);
+        margin: 4px 0 12px;
+    }
+
+    .forecast-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: var(--space-3);
+    }
+
+    .forecast-kpi-stat {
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: var(--radius);
+        padding: var(--space-3) var(--space-4);
+    }
+
+    .forecast-kpi-stat-label {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #BBF7D0;
+        margin-bottom: 2px;
+    }
+
+    .forecast-kpi-stat-val {
+        font-family: var(--font-mono);
+        font-size: clamp(1.2rem, 1.8vw, 1.5rem);
+        font-weight: 800;
+        color: #FFFFFF;
+        line-height: 1.1;
+    }
+
+    .forecast-kpi-stat-sub {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.82);
+        margin-top: 2px;
+    }
+
+    /* Segmented Tab Navigation for Forecast Details */
+    .segmented-tabs-bar {
+        display: flex;
+        gap: 6px;
+        border-bottom: 2px solid var(--color-border);
+        padding-bottom: 8px;
+        margin-bottom: var(--space-6);
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .segmented-tabs-bar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .seg-tab-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 16px;
+        border-radius: var(--radius);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        color: var(--color-text-muted);
+        font-size: var(--text-sm);
+        font-weight: 700;
+        cursor: pointer;
+        min-height: 44px;
+        white-space: nowrap;
+        transition: all var(--transition-fast);
+    }
+
+    .seg-tab-btn:hover {
+        background: var(--color-green-light);
+        color: var(--color-green-primary);
+        border-color: var(--color-green-accent);
+    }
+
+    .seg-tab-btn.active {
+        background: var(--color-green-primary);
+        color: #FFFFFF;
+        border-color: var(--color-green-primary);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .seg-panel {
+        display: none;
+        animation: fadeIn 200ms ease;
+    }
+
+    .seg-panel.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Loading Shimmer Overlay */
+    .calc-loading-overlay {
+        display: none;
+        background: var(--color-surface);
+        border: 1.5px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-12) var(--space-6);
+        text-align: center;
+        margin-bottom: var(--space-6);
+    }
+
+    @media (max-width: 992px) {
+        .workspace-sidebar {
+            position: static;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="predict-header">
+    <div>
+        <span class="badge badge-success" style="margin-bottom: 6px;">
+            <svg class="icon-svg icon-xs" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            Hybrid ML Stacking Ensemble
+        </span>
+        <h1>Custom Farm Land Biomass Estimation</h1>
+        <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin: 0; max-width: 680px;">
+            Input custom acreage, soil condition, and seasonal climate telemetry to simulate post-harvest shell production, economic value, and nearest factory off-takers.
+        </p>
+    </div>
+
+    <!-- Quick Scenario Presets -->
+    <div class="scenario-pill-strip" role="group" aria-label="Scenario Presets">
+        <button type="button" class="scenario-pill {% if soil_type == 'normal' and weather_type == 'normal' %}active{% endif %}" onclick="applyPreset('normal', 'normal', this)">
+            <svg class="icon-svg icon-xs" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+            <span>Normal Baseline</span>
+        </button>
+        <button type="button" class="scenario-pill {% if soil_type == 'irrigated' and weather_type == 'abundant' %}active{% endif %}" onclick="applyPreset('irrigated', 'abundant', this)">
+            <svg class="icon-svg icon-xs" viewBox="0 0 24 24"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
+            <span>Irrigated High-Yield</span>
+        </button>
+        <button type="button" class="scenario-pill {% if soil_type == 'dry' and weather_type == 'drought' %}active{% endif %}" onclick="applyPreset('dry', 'drought', this)">
+            <svg class="icon-svg icon-xs" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+            <span>Dryland Drought-Stress</span>
+        </button>
+    </div>
+</div>
+
+<!-- 12-Column Responsive Workspace Grid -->
+<div class="grid-12">
+
+    <!-- LEFT COLUMN: Form Controls (Span 4) -->
+    <div class="col-4 col-md-12 workspace-sidebar">
+        <div class="form-box">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-border-subtle);">
+                <div style="font-weight: 800; font-size: var(--text-sm); color: var(--color-green-primary); display: flex; align-items: center; gap: 6px;">
+                    <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <span>Parcel Configuration</span>
+                </div>
+                <span class="badge badge-success">Simulate</span>
+            </div>
+
+            <form method="POST" action="/predict" id="predictForm">
+                <!-- 1. District Selection with Filter -->
+                <div class="form-group">
+                    <label for="predictDistrictSelect" class="form-label">
+                        <svg class="icon-svg icon-xs" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <span>1. Location District</span>
+                    </label>
+                    <div class="searchable-wrap">
+                        <svg class="icon-svg icon-xs searchable-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        <input type="text" id="predictDistrictSearch" placeholder="Type to filter district..." class="searchable-input" aria-label="Search District">
+                        <select name="place" id="predictDistrictSelect" class="form-select">
+                            {% for d in districts %}
+                            <option value="{{ d }}" {% if d == custom_place %}selected{% endif %}>{{ d }} District</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 2. Land Extent with Quick Chips -->
+                <div class="form-group">
+                    <label for="landAreaInput" class="form-label">
+                        <svg class="icon-svg icon-xs" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/></svg>
+                        <span>2. Cultivated Area</span>
+                    </label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="number" step="0.5" min="0.1" max="100000" id="landAreaInput" name="area" value="{{ land_area_val }}" required class="form-control" style="flex: 2; font-family: var(--font-mono); font-weight: 700;">
+                        <select name="unit" id="landAreaUnit" class="form-select" style="flex: 1.2;">
+                            <option value="acres" {% if land_area_unit == 'acres' %}selected{% endif %}>Acres</option>
+                            <option value="hectares" {% if land_area_unit == 'hectares' %}selected{% endif %}>Hectares</option>
+                        </select>
+                    </div>
+                    <!-- Quick Area Chips -->
+                    <div class="area-chip-strip">
+                        <button type="button" class="area-chip" onclick="setArea(5)">5</button>
+                        <button type="button" class="area-chip" onclick="setArea(25)">25</button>
+                        <button type="button" class="area-chip" onclick="setArea(50)">50</button>
+                        <button type="button" class="area-chip" onclick="setArea(100)">100</button>
+                        <button type="button" class="area-chip" onclick="setArea(250)">250</button>
+                    </div>
+                    <div id="areaValidationFeedback" class="form-error-msg" style="margin-top: 4px; min-height: 16px;"></div>
+                </div>
+
+                <!-- 3. Soil Moisture & Root Zone Wetness -->
+                <div class="form-group">
+                    <label for="soilSelect" class="form-label">
+                        <svg class="icon-svg icon-xs" viewBox="0 0 24 24"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/></svg>
+                        <span>3. Soil Moisture Profile</span>
+                    </label>
+                    <select name="soil_condition" id="soilSelect" class="form-select">
+                        <option value="normal" {% if soil_type == 'normal' %}selected{% endif %}>Normal Baseline (Regional Avg)</option>
+                        <option value="irrigated" {% if soil_type == 'irrigated' %}selected{% endif %}>Irrigated / Wet (Canal/Borewell)</option>
+                        <option value="dry" {% if soil_type == 'dry' %}selected{% endif %}>Dryland / Water-Deficit</option>
+                    </select>
+                </div>
+
+                <!-- 4. Weather & Rainfall Scenario -->
+                <div class="form-group">
+                    <label for="weatherSelect" class="form-label">
+                        <svg class="icon-svg icon-xs" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+                        <span>4. Weather &amp; Precipitation</span>
+                    </label>
+                    <select name="weather_condition" id="weatherSelect" class="form-select">
+                        <option value="normal" {% if weather_type == 'normal' %}selected{% endif %}>Normal Monsoon (Historical Avg)</option>
+                        <option value="abundant" {% if weather_type == 'abundant' %}selected{% endif %}>Abundant Monsoon (+35% Rain)</option>
+                        <option value="drought" {% if weather_type == 'drought' %}selected{% endif %}>Deficit / Drought (-35% Rain, +1.2°C)</option>
+                    </select>
+                </div>
+
+                <!-- 5. Predictive Model Architecture -->
+                <div class="form-group">
+                    <label for="modelSelect" class="form-label">
+                        <svg class="icon-svg icon-xs" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>
+                        <span>5. Model Architecture</span>
+                    </label>
+                    <select name="model" id="modelSelect" class="form-select">
+                        {% for m_key, m_name in models %}
+                        <option value="{{ m_key }}" {% if m_key == selected_model %}selected{% endif %}>{{ m_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Action Buttons: Submit + Reset -->
+                <div style="display: flex; gap: var(--space-3); margin-top: var(--space-4); border-top: 1px solid var(--color-border-subtle); padding-top: var(--space-4);">
+                    <button type="submit" id="submitPredictBtn" class="btn btn-primary" style="flex: 2;">
+                        <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        <span>Run Simulation</span>
+                    </button>
+                    <button type="button" id="resetPredictBtn" class="btn btn-secondary" style="flex: 1;" title="Reset parameters to standard baseline">
+                        <span>↺ Reset</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- RIGHT COLUMN: Simulation Outputs (Span 8) -->
+    <div class="col-8 col-md-12">
+
+        <!-- Loading Skeleton -->
+        <div class="calc-loading-overlay" id="loadingCard">
+            <div style="width: 48px; height: 48px; border-radius: 50%; border: 3px solid var(--color-green-light); border-top-color: var(--color-green-accent); animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
+            <h3 style="color: var(--color-green-primary); margin-bottom: 6px;">Running Ensemble Prediction Engine...</h3>
+            <p style="font-size: var(--text-sm); color: var(--color-text-muted);">
+                Computing TreeSHAP factor attributions and searching 23 regional buyer plants.
+            </p>
+        </div>
+        <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
+
+        {% if prediction is not none and util_data is not none %}
+        <!-- 1. Executive Forecast KPI Banner -->
+        <div class="forecast-kpi-banner">
+            <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; background: rgba(255, 255, 255, 0.16); padding: 3px 10px; border-radius: var(--radius-pill); text-transform: uppercase;">
+                <span>📍</span> {{ custom_place }} &bull; {{ "%.1f"|format(land_area_val) }} {{ land_area_unit }} &bull; {{ selected_model|upper }}
+            </div>
+            <h2>Simulated Groundnut Shell Biomass Forecast</h2>
+
+            <div class="forecast-kpi-grid">
+                <div class="forecast-kpi-stat">
+                    <div class="forecast-kpi-stat-label">Yield Density</div>
+                    <div class="forecast-kpi-stat-val">{{ "%.2f"|format(prediction) }}</div>
+                    <div class="forecast-kpi-stat-sub">kg / ha (&plusmn;71.1 MAE)</div>
+                </div>
+
+                <div class="forecast-kpi-stat">
+                    <div class="forecast-kpi-stat-label">Total Mass</div>
+                    <div class="forecast-kpi-stat-val">{{ "{:,.1f}".format(util_data.total_biomass_tonnes) }}</div>
+                    <div class="forecast-kpi-stat-sub">Tonnes dry shells</div>
+                </div>
+
+                <div class="forecast-kpi-stat">
+                    <div class="forecast-kpi-stat-label">Farmgate Revenue</div>
+                    <div class="forecast-kpi-stat-val">₹ {{ "{:,.0f}".format(util_data.total_biomass_tonnes * 2000) }}</div>
+                    <div class="forecast-kpi-stat-sub">at ₹ 2,000 / T raw</div>
+                </div>
+
+                <div class="forecast-kpi-stat">
+                    <div class="forecast-kpi-stat-label">Clean Electricity</div>
+                    <div class="forecast-kpi-stat-val">{{ "{:,.0f}".format(util_data.electricity_mwh) }}</div>
+                    <div class="forecast-kpi-stat-sub">MWh (~{{ "{:,.0f}".format(util_data.electricity_mwh / 2.0) }} homes)</div>
+                </div>
+
+                <div class="forecast-kpi-stat">
+                    <div class="forecast-kpi-stat-label">CO₂ Displaced</div>
+                    <div class="forecast-kpi-stat-val">{{ "{:,.1f}".format(util_data.co2_avoided_tonnes) }}</div>
+                    <div class="forecast-kpi-stat-sub">Tonnes avoided coal</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Segmented Tabs: Off-Takers, SHAP Attribution, Agro-Climate, Products -->
+        <div class="segmented-tabs-bar" role="tablist">
+            <button type="button" class="seg-tab-btn active" role="tab" id="tab-offtakers" aria-selected="true" onclick="switchSegTab('offtakers', this)">
+                <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+                <span>Nearby Buyers &amp; Off-Takers</span>
+            </button>
+            <button type="button" class="seg-tab-btn" role="tab" id="tab-shap" aria-selected="false" onclick="switchSegTab('shap', this)">
+                <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M12 5a3 3 0 1 0-5.997.142 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.142 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/></svg>
+                <span>TreeSHAP Drivers</span>
+            </button>
+            <button type="button" class="seg-tab-btn" role="tab" id="tab-features" aria-selected="false" onclick="switchSegTab('features', this)">
+                <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+                <span>Agro-Climate Inputs</span>
+            </button>
+            <button type="button" class="seg-tab-btn" role="tab" id="tab-products" aria-selected="false" onclick="switchSegTab('products', this)">
+                <svg class="icon-svg icon-sm" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                <span>Products &amp; Off-Take</span>
+            </button>
+        </div>
+
+        <!-- TAB 1: OFF-TAKERS -->
+        <div id="panel-offtakers" class="seg-panel active">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title">Commercial Off-Taker Deals for This Harvest</h3>
+                        <div style="font-size: var(--text-xs); color: var(--color-text-muted);">
+                            Freight cost computed from {{ custom_place }} with net producer margin in-hand
+                        </div>
+                    </div>
+                    <a href="/marketplace?district={{ custom_place }}&biomass_tonnes={{ util_data.total_biomass_tonnes|int }}" class="btn btn-secondary btn-sm">
+                        <span>View All 23 Plants &rarr;</span>
+                    </a>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+                    {% set factories = industry_matches.matched_factories if industry_matches and industry_matches.matched_factories else [] %}
+                    {% for match in factories[:5] %}
+                    <div style="background: var(--color-surface); border: 1.5px solid {% if loop.first %}var(--color-green-accent){% else %}var(--color-border){% endif %}; border-radius: var(--radius); padding: var(--space-4); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-3);">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                <span style="font-size: 18px;">{{ match.product_icon or '🏭' }}</span>
+                                <strong style="font-size: var(--text-base); color: var(--color-green-primary);">{{ match.name }}</strong>
+                                <span class="badge badge-info" style="font-size: 10px;">{{ match.factory_district or match.location }}</span>
+                                {% if loop.first %}
+                                <span class="badge badge-warning" style="font-size: 10px;">OPTIMAL MARGIN</span>
+                                {% endif %}
+                            </div>
+                            <div style="font-size: var(--text-xs); color: var(--color-text-muted);">
+                                {{ match.category }} &bull; Route: <strong>{{ "%.0f"|format(match.distance_km) }} km</strong> &bull; Quoted Rate: <strong>₹ {{ "{:,.0f}".format(match.buying_price_per_tonne_inr) }} / T</strong>
+                            </div>
+                        </div>
+
+                        <div style="text-align: right;">
+                            <div style="font-size: 10px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">In-Hand Net Profit</div>
+                            <div style="font-family: var(--font-mono); font-size: var(--text-xl); font-weight: 800; color: var(--color-green-primary);">
+                                + ₹ {{ "{:,.0f}".format(match.producer_net_profit_inr) }}
+                            </div>
+                            <div style="font-size: 11px; color: var(--color-brown);">
+                                After ₹ {{ "{:,.0f}".format(match.transport_cost_inr) }} freight
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <p>No factories matched within freight radius. Increase radius in the Industry Matcher.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: SHAP DRIVERS -->
+        <div id="panel-shap" class="seg-panel">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title">TreeSHAP Explainability Synthesis</h3>
+                        <div style="font-size: var(--text-xs); color: var(--color-text-muted);">
+                            Natural language diagnosis of why this prediction shifted relative to the state baseline ({{ "%.1f"|format(shap_base_val) }} kg/ha)
+                        </div>
+                    </div>
+                    <span class="badge badge-success">XAI Telemetry</span>
+                </div>
+
+                {% if narrative %}
+                <div style="background: var(--color-bg-subtle); border-radius: var(--radius); padding: var(--space-4); margin-bottom: var(--space-4);">
+                    <div style="font-weight: 700; font-size: var(--text-sm); color: var(--color-green-primary); margin-bottom: 4px;">
+                        Algorithmic Verdict: <span style="color: {{ narrative.verdict_color }};">{{ narrative.verdict }}</span>
+                    </div>
+                    <p style="font-size: var(--text-xs); color: var(--color-text); line-height: 1.5; margin: 0;">
+                        {{ narrative.summary }}
+                    </p>
+                </div>
+                {% endif %}
+
+                <!-- SHAP Force Table -->
+                <div class="table-responsive">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Environmental Driver</th>
+                                <th class="num">Observed Value</th>
+                                <th class="num">Impact on Yield</th>
+                                <th>Influence Direction</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in shap_attribution %}
+                            <tr>
+                                <td style="font-weight: 600; color: var(--color-text);">{{ item.feature }}</td>
+                                <td class="num">{{ "%.2f"|format(item.val) }}</td>
+                                <td class="num" style="font-weight: 800; color: {% if item.impact >= 0 %}var(--color-green-accent){% else %}var(--color-danger){% endif %};">
+                                    {% if item.impact >= 0 %}+{% endif %}{{ "%.2f"|format(item.impact) }} kg/ha
+                                </td>
+                                <td>
+                                    {% if item.impact >= 0 %}
+                                    <span class="badge badge-success">&uparrow; Yield Booster</span>
+                                    {% else %}
+                                    <span class="badge badge-danger">&downarrow; Yield Penalty</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: AGRO-CLIMATE INPUTS -->
+        <div id="panel-features" class="seg-panel">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Synchronized Agro-Meteorological Feature Vector</h3>
+                    <span class="badge badge-info">NASA POWER + MODIS</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-3);">
+                    {% for f_name, f_val in row_features.items() %}
+                    <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 12px 14px;">
+                        <div style="font-size: 10.5px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase;">{{ f_name }}</div>
+                        <div style="font-family: var(--font-mono); font-size: var(--text-base); font-weight: 800; color: var(--color-green-primary); margin-top: 3px;">
+                            {% if f_val is number %}{{ "%.2f"|format(f_val) }}{% else %}{{ f_val }}{% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: PRODUCTS -->
+        <div id="panel-products" class="seg-panel">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Commercial Conversion &amp; Bioeconomy Derivatives</h3>
+                    <span class="badge badge-warning">Off-Take Yields</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-4);">
+                    <div style="background: var(--color-bg-subtle); border-radius: var(--radius); padding: var(--space-4);">
+                        <div style="font-size: var(--text-xs); font-weight: 800; color: var(--color-green-primary); text-transform: uppercase;">Solid Briquettes (90mm)</div>
+                        <div style="font-family: var(--font-mono); font-size: var(--text-2xl); font-weight: 800; color: var(--color-green-primary); margin: 4px 0;">{{ "{:,.1f}".format(util_data.briquettes_tonnes) }} Tonnes</div>
+                        <div style="font-size: var(--text-xs); color: var(--color-text-muted);">Valued at ₹ 6,650 / T for industrial coal displacement</div>
+                    </div>
+
+                    <div style="background: var(--color-bg-subtle); border-radius: var(--radius); padding: var(--space-4);">
+                        <div style="font-size: var(--text-xs); font-weight: 800; color: var(--color-brown); text-transform: uppercase;">Biochar Soil Enricher</div>
+                        <div style="font-family: var(--font-mono); font-size: var(--text-2xl); font-weight: 800; color: var(--color-brown); margin: 4px 0;">{{ "{:,.1f}".format(util_data.biochar_tonnes) }} Tonnes</div>
+                        <div style="font-size: var(--text-xs); color: var(--color-text-muted);">High surface area recalcitrant carbon for soil moisture</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- Initial Blank State -->
+        <div class="card" style="text-align: center; padding: var(--space-12) var(--space-6);">
+            <div style="width: 48px; height: 48px; border-radius: var(--radius-sm); background: var(--color-green-light); color: var(--color-green-accent); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-3);">
+                <svg class="icon-svg icon-md" viewBox="0 0 24 24"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/></svg>
+            </div>
+            <h3 style="color: var(--color-green-primary); margin-bottom: 6px;">Ready for Simulation</h3>
+            <p style="font-size: var(--text-sm); color: var(--color-text-muted); max-width: 420px; margin: 0 auto var(--space-4);">
+                Configure your farm parcel acreage and climatic conditions on the left panel, then click <strong>Run Simulation</strong>.
+            </p>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Tab Switching
+function switchSegTab(tabKey, btn) {
+    document.querySelectorAll('.seg-tab-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+    });
+    btn.classList.add('active');
+    btn.setAttribute('aria-selected', 'true');
+
+    document.querySelectorAll('.seg-panel').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById('panel-' + tabKey);
+    if (target) target.classList.add('active');
+}
+
+// Scenario Presets
+function applyPreset(soil, weather, btn) {
+    document.querySelectorAll('.scenario-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+
+    const soilSelect = document.getElementById('soilSelect');
+    const weatherSelect = document.getElementById('weatherSelect');
+    if (soilSelect) soilSelect.value = soil;
+    if (weatherSelect) weatherSelect.value = weather;
+}
+
+// Quick Area Setter
+function setArea(val) {
+    const areaInput = document.getElementById('landAreaInput');
+    if (areaInput) {
+        areaInput.value = val;
+        validateAreaInput();
+    }
+}
+
+// Inline Area Validation
+function validateAreaInput() {
+    const areaInput = document.getElementById('landAreaInput');
+    const feedback = document.getElementById('areaValidationFeedback');
+    if (!areaInput || !feedback) return;
+
+    const val = parseFloat(areaInput.value);
+    if (isNaN(val) || val <= 0) {
+        areaInput.classList.add('is-invalid');
+        feedback.textContent = 'Please enter a positive cultivated acreage (e.g. 50).';
+        feedback.style.color = 'var(--color-danger)';
+    } else if (val > 100000) {
+        areaInput.classList.add('is-invalid');
+        feedback.textContent = 'Area exceeds maximum supported single parcel threshold (100,000).';
+        feedback.style.color = 'var(--color-danger)';
+    } else {
+        areaInput.classList.remove('is-invalid');
+        feedback.textContent = '';
+    }
+}
+
+// Form Submission with Loading Shimmer
+const predictForm = document.getElementById('predictForm');
+if (predictForm) {
+    predictForm.addEventListener('submit', function() {
+        const loadingCard = document.getElementById('loadingCard');
+        if (loadingCard) {
+            loadingCard.style.display = 'block';
+        }
+    });
+}
+
+// Reset Button
+const resetBtn = document.getElementById('resetPredictBtn');
+if (resetBtn) {
+    resetBtn.addEventListener('click', function() {
+        const form = document.getElementById('predictForm');
+        if (form) {
+            document.getElementById('predictDistrictSelect').value = 'Ananthapur';
+            document.getElementById('landAreaInput').value = '50';
+            document.getElementById('landAreaUnit').value = 'acres';
+            document.getElementById('soilSelect').value = 'normal';
+            document.getElementById('weatherSelect').value = 'normal';
+            document.getElementById('modelSelect').value = 'hybrid';
+            validateAreaInput();
+        }
+    });
+}
+
+// Searchable District Filter
+const predictDistrictSearch = document.getElementById('predictDistrictSearch');
+const predictDistrictSelect = document.getElementById('predictDistrictSelect');
+if (predictDistrictSearch && predictDistrictSelect) {
+    predictDistrictSearch.addEventListener('input', function() {
+        const query = this.value.trim().toLowerCase();
+        let matched = null;
+        Array.from(predictDistrictSelect.options).forEach(opt => {
+            const matches = opt.textContent.toLowerCase().includes(query);
+            opt.style.display = matches ? '' : 'none';
+            if (matches && !matched) matched = opt;
+        });
+        if (matched && query.length > 0) {
+            predictDistrictSelect.value = matched.value;
+        }
+    });
+}
+
+const landAreaInput = document.getElementById('landAreaInput');
+if (landAreaInput) {
+    landAreaInput.addEventListener('input', validateAreaInput);
+}
+</script>
+{% endblock %}

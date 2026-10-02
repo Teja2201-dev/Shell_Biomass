@@ -1,0 +1,10 @@
+Feature,Importance
+mean_temperature_C,0.3942389207720489
+mean_relative_humidity_pct,0.22589495475779192
+mean_ndvi,0.13939309929754418
+mean_evi,0.07065941941308831
+annual_precipitation_mm,0.05613209186720233
+evi_std,0.04056281433004943
+mean_root_zone_soil_wetness,0.037080687653961844
+ndvi_std,0.03182789485230618
+valid_observations,0.0042101170560069215

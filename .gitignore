@@ -1,0 +1,35 @@
+# Environments
+mac_venv/
+venv/
+env/
+.venv/
+
+# Python cache & bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Caches & OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.matplotlib_cache/
+.pytest_cache/
+
+# Large satellite raw HDF binaries (>100MB, rejected by GitHub)
+*.hdf
+*.h5
+*.nc
+
+# Scratch development scripts
+scratch/
+
+# IDE files
+.idea/
+.vscode/

@@ -1,0 +1,10 @@
+Feature,Feature_Key,Mean_Abs_SHAP_Impact
+Mean Temp (C),mean_temperature_C,76.66441217758009
+Relative Humidity (%),mean_relative_humidity_pct,44.460840435369136
+Mean NDVI (Vegetation),mean_ndvi,21.482235935324514
+Annual Precipitation (mm),annual_precipitation_mm,12.878994192185859
+Mean EVI (Enhanced Veg),mean_evi,12.244848688750636
+Root Zone Soil Wetness,mean_root_zone_soil_wetness,8.332134390187097
+EVI Std Dev,evi_std,7.725562809691719
+NDVI Std Dev,ndvi_std,5.088465975226555
+Valid Satellite Obs,valid_observations,1.0779600662422226
