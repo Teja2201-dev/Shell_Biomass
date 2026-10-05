@@ -305,7 +305,7 @@
                         <span>2. Cultivated Area</span>
                     </label>
                     <div style="display: flex; gap: 8px;">
-                        <input type="number" step="0.5" min="0.1" max="100000" id="landAreaInput" name="area" value="{{ land_area_val }}" required class="form-control" style="flex: 2; font-family: var(--font-mono); font-weight: 700;">
+                        <input type="number" step="any" min="0.01" max="100000" id="landAreaInput" name="area" value="{{ land_area_val }}" required class="form-control" style="flex: 2; font-family: var(--font-mono); font-weight: 700;">
                         <select name="unit" id="landAreaUnit" class="form-select" style="flex: 1.2;">
                             <option value="acres" {% if land_area_unit == 'acres' %}selected{% endif %}>Acres</option>
                             <option value="hectares" {% if land_area_unit == 'hectares' %}selected{% endif %}>Hectares</option>
